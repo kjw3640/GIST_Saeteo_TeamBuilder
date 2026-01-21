@@ -1,0 +1,9 @@
+# Excel File (For protecting personal information)
+*.xlsx
+*.xls
+*.csv
+
+# Python Cash and System File
+__pycache__/
+*.pyc
+.DS_Store
