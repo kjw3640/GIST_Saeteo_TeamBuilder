@@ -188,7 +188,7 @@ class TeamBuilder:
         print()
         title_text = Text("🦄 GIST 새내기배움터 조 자동 배정 프로그램 🚀", style="bold white", justify="center")
         subtitle_text = Text("\nFairness • Balance • Optimization", style="dim white", justify="center")
-        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 1 . 21 ]", style="bold bright_green", justify="center")
+        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 2 . 9 ]", style="bold bright_green", justify="center")
         header_content = Text.assemble(title_text, subtitle_text, dept_text, justify="center")
         console.print(Panel(header_content, box=box.DOUBLE, border_style="bright_green", padding=(1, 4), style="on black"))
         print("\n")
