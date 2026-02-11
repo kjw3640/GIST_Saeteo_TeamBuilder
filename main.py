@@ -49,25 +49,69 @@ console = Console(theme=custom_theme)
 def smart_get_year(value):
     try:
         if hasattr(value, 'year'): return value.year
+        
         val_str = str(value).strip()
         if not val_str or val_str.lower() == 'nan': return 0
-        if len(val_str) == 4 and val_str.isdigit(): return int(val_str)
-        if '-' in val_str or len(val_str) == 6:
-            prefix = val_str.split('-')[0] if '-' in val_str else val_str[:6]
+        
+        if val_str.endswith('.0'): 
+            val_str = val_str[:-2]
+            
+        if len(val_str) == 12 and val_str.isdigit():
+            val_str = '0' + val_str
+        elif len(val_str) == 5 and val_str.isdigit():
+            val_str = '0' + val_str
+
+        if len(val_str) == 4 and val_str.isdigit(): 
+            return int(val_str)
+        
+        prefix = val_str
+        if '-' in val_str:
+            prefix = val_str.split('-')[0]
+            
+        if len(prefix) >= 6 and prefix[:6].isdigit():
             yy = int(prefix[:2])
-            return 2000 + yy if 0 <= yy <= 30 else 1900 + yy
+            if 0 <= yy <= 30: return 2000 + yy
+            else: return 1900 + yy
+            
         return int(float(val_str))
     except: return 0 
 
 def format_phone_number(value):
     try:
+        if isinstance(value, float):
+            value = int(value)
+            
         s = str(value).strip()
         if not s or s.lower() == 'nan': return ""
         if s.endswith('.0'): s = s[:-2]
         s = s.replace('-', '').replace(' ', '').replace('.', '')
-        if len(s) == 10 and s.startswith('1'): s = '0' + s
-        if len(s) == 11: return f"{s[:3]}-{s[3:7]}-{s[7:]}"
+        
+        if len(s) == 10 and s.startswith('1'): 
+            s = '0' + s
+            
+        if len(s) == 11: 
+            return f"{s[:3]}-{s[3:7]}-{s[7:]}"
         return s
+    except: return value
+
+def format_id_number(value):
+    try:
+        if isinstance(value, float):
+            value = int(value)
+            
+        s = str(value).strip()
+        if not s or s.lower() == 'nan': return ""
+        if s.endswith('.0'): s = s[:-2]
+        
+        s = s.replace('-', '').replace(' ', '')
+        
+        if len(s) == 12 and s.isdigit():
+            s = '0' + s
+            
+        if len(s) == 13 and s.isdigit():
+            return f"{s[:6]}-{s[6:]}"
+        
+        return value 
     except: return value
 
 def format_gender_output(value):
@@ -90,34 +134,23 @@ def get_name_key(name):
     if len(name) > 1: return name[1:] 
     return name
 
-# [UPGRADE] 특수문자(+), 다중 공백 처리 강화된 분리 함수
 def split_school_and_name(raw_text):
     text = str(raw_text).strip()
     
-    # 1. 4글자 이하는 이름으로 간주
     if len(text) <= 4:
         return None, text
 
-    # 2. 전처리: 구분자로 쓰일만한 특수문자(+, /, ,, _)를 공백으로 치환
-    # 예: "한국고+홍길동" -> "한국고 홍길동"
     cleaned_text = re.sub(r'[\+\,\/\_\-]', ' ', text)
-    
-    # 3. 전처리: 여러 개의 공백을 하나의 공백으로 축소
-    # 예: "한국고    홍길동" -> "한국고 홍길동"
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
 
-    # 4. 공백 기준 분리 시도
     if ' ' in cleaned_text:
         parts = cleaned_text.split()
         if len(parts) >= 2:
             potential_school = parts[0]
-            # 학교 접미사 확인
             if any(potential_school.endswith(suffix) for suffix in ['고', '학교']):
-                real_name = " ".join(parts[1:]) # 나머지는 이름
+                real_name = " ".join(parts[1:]) 
                 return potential_school, real_name
 
-    # 5. 공백 없이 붙어있는 경우 (기존 정규식 활용)
-    # 예: "한국고홍길동"
     match = re.search(r"^(.*?)(고등학교|학교|고)([가-힣]{2,4})$", text)
     if match:
         school_part = match.group(1) + match.group(2)
@@ -128,6 +161,7 @@ def split_school_and_name(raw_text):
 
     return None, text
 
+# [UPGRADE] 절대 균등 분배(Max Diff <= 1) 알고리즘 적용
 def calculate_score(group_id, member, group_status, constraints, weights, ignore_age=False, limits_config=None):
     leader_min_year = constraints['leader_years'].get(group_id, 0)
     
@@ -144,9 +178,25 @@ def calculate_score(group_id, member, group_status, constraints, weights, ignore
     if member['name_key'] in group_status[group_id]['names']:
         return -float('inf')
 
-    nc_count = group_status[group_id]['new_cam'].get(member['new_cam'], 0)
-    if nc_count >= 3:
+    # ----------------------------------------------------
+    # [NEW] 신캠조 인원 차이 최대 1 강제 로직
+    # ----------------------------------------------------
+    nc = member['new_cam']
+    nc_count = group_status[group_id]['new_cam'].get(nc, 0)
+    
+    nc_base = constraints.get('new_cam_bases', {}).get(nc, 0)
+    nc_rem = constraints.get('new_cam_rems', {}).get(nc, 0)
+    
+    # 규칙 1: 어떤 조든 (기본 몫 + 1)을 초과할 수 없음
+    if nc_count >= nc_base + 1:
         return -float('inf')
+        
+    # 규칙 2: (기본 몫 + 1)을 가진 조의 개수가 '나머지(Rem)' 개수를 초과할 수 없음
+    if nc_count == nc_base:
+        groups_at_max = sum(1 for g in group_status.values() if g['new_cam'].get(nc, 0) > nc_base)
+        if groups_at_max >= nc_rem:
+            return -float('inf')
+    # ----------------------------------------------------
 
     score = 0
     score -= group_status[group_id]['count'] * weights['size'] 
@@ -154,9 +204,11 @@ def calculate_score(group_id, member, group_status, constraints, weights, ignore
     score -= group_status[group_id]['majors'].get(member['major'], 0) * weights['major']
     score -= group_status[group_id]['birth_years'].get(member['birth_year'], 0) * weights['birth_year']
     
-    if nc_count == 1: score += weights['new_cam_cluster_bonus'] 
-    elif nc_count > 0: score += weights['new_cam_exist_bonus']
-    else: score -= weights['new_cam_scatter_penalty']
+    # 몫(Base)을 최우선으로 채우도록 가이드하는 점수
+    if nc_count < nc_base:
+        score += 500  # 우선적으로 바닥(Base)을 평평하게 다지도록 강력 유도
+    elif nc_count == nc_base:
+        score += 50   # 바닥이 다 채워지면 잉여 인원(Rem)을 자연스럽게 분배
 
     return score
 
@@ -177,18 +229,14 @@ class TeamBuilder:
             'size': 100,            
             'gender': 50,           
             'major': 40,            
-            'birth_year': 30,       
-            'new_cam_cluster_bonus': 200,   
-            'new_cam_exist_bonus': 20,      
-            'new_cam_scatter_penalty': 50,  
-            'new_cam_max_penalty': 100      
+            'birth_year': 30,
         }
 
     def agree_to_terms(self):
         print()
-        title_text = Text("🦄 GIST 새내기배움터 조 자동 배정 프로그램 🚀", style="bold white", justify="center")
+        title_text = Text("🐣 GIST 새내기배움터 조 자동 배정 프로그램 🌱", style="bold white", justify="center")
         subtitle_text = Text("\nFairness • Balance • Optimization", style="dim white", justify="center")
-        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 2 . 9 ]", style="bold bright_green", justify="center")
+        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 2 . 11 ]", style="bold bright_green", justify="center")
         header_content = Text.assemble(title_text, subtitle_text, dept_text, justify="center")
         console.print(Panel(header_content, box=box.DOUBLE, border_style="bright_green", padding=(1, 4), style="on black"))
         print("\n")
@@ -217,7 +265,7 @@ class TeamBuilder:
                 console.print("[red]⚠️ 'y' 또는 'n'만 입력해주세요.[/red]")
 
     def load_data(self):
-        year_input = console.input("[bold yellow]⚡ 행사 연도 (4자리)를 입력하세요[/bold yellow] [dim](예: 2025)[/dim]: ").strip()
+        year_input = console.input("[bold yellow]⚡ 행사 연도 (4자리)를 입력하세요[/bold yellow] [dim](예: 2026)[/dim]: ").strip()
         leader_file = f"{year_input}ST_leader.xlsx"
         member_file = f"{year_input}ST_freshmen.xlsx"
         
@@ -345,11 +393,23 @@ class TeamBuilder:
         base_f = total_f // self.num_groups
         rem_f = total_f % self.num_groups
         female_slots = [base_f + 1] * rem_f + [base_f] * (self.num_groups - rem_f)
+
+        # [NEW] 신캠조 평탄화를 위한 Base 및 Remainder 정밀 계산
+        new_cam_counts = {}
+        for m in self.members:
+            nc = m['new_cam']
+            new_cam_counts[nc] = new_cam_counts.get(nc, 0) + 1
+            
+        new_cam_bases = {}
+        new_cam_rems = {}
+        for nc, count in new_cam_counts.items():
+            new_cam_bases[nc] = count // self.num_groups  # 조마다 무조건 할당되어야 하는 기본 몫
+            new_cam_rems[nc] = count % self.num_groups    # +1 명이 되어야 하는 조의 개수
         
-        max_retries = 2000 
+        max_retries = 10000 
         success = False
         
-        with console.status("[bold green]성비와 인원을 완벽하게 맞추는 중...[/bold green]", spinner="bouncingBar") as status:
+        with console.status("[bold green]성비와 인원을 완벽하게 맞추는 중... (엄격한 신캠조 분배 적용)[/bold green]", spinner="bouncingBar") as status:
             for attempt in range(1, max_retries + 1):
                 random.shuffle(male_slots)
                 random.shuffle(female_slots)
@@ -381,8 +441,12 @@ class TeamBuilder:
                         random.shuffle(candidates)
                         
                         for g_id in candidates:
+                            # 정밀하게 계산된 Base와 Remainder를 넘겨줌
                             score = calculate_score(g_id, member, group_status, 
-                                                 {'leader_years': self.leaders}, self.weights, 
+                                                 {'leader_years': self.leaders, 
+                                                  'new_cam_bases': new_cam_bases,
+                                                  'new_cam_rems': new_cam_rems}, 
+                                                 self.weights, 
                                                  ignore_age=ignore_age, 
                                                  limits_config={
                                                      'total': self.total_limits[g_id],
@@ -411,14 +475,14 @@ class TeamBuilder:
                     break
                 
                 if attempt % 100 == 0:
-                    status.update(f"[bold yellow]재시도 중... (Attempt {attempt})[/bold yellow]")
+                    status.update(f"[bold yellow]수학적 최적화 탐색 중... (Attempt {attempt})[/bold yellow]")
 
         if success:
             console.print(f"\n[success]✨ 배정 성공! (총 시도: {attempt}회)[/success]")
             self._print_stats(group_status)
         else:
             console.print(f"\n[error]❌ [치명적 오류] {max_retries}번을 시도했으나 배정에 실패했습니다.[/error]")
-            console.print("이유: 동명이인 등 하드 조건이 너무 까다롭거나 성비 슬롯 매칭이 어렵습니다.")
+            console.print("이유: 하드 조건(성비, 신캠조 분배, 동명이인)을 모두 만족하는 조합을 찾지 못했습니다.")
 
     def _update_status(self, status, g_id, member):
         st = status[g_id]
@@ -437,15 +501,41 @@ class TeamBuilder:
         table = Table(title="📊 [bold]최종 배정 결과[/bold]", border_style="cyan", header_style="bold white on dark_green")
         table.add_column("조 이름", justify="center", style="bold cyan")
         table.add_column("인원", justify="center", style="white")
-        table.add_column("성비 (남/여)", justify="center")
-        table.add_column("비고", justify="left")
+        table.add_column("성비\n(남/여)", justify="center")
+        
+        all_new_cams = set()
+        for g_id in range(1, self.num_groups + 1):
+            all_new_cams.update(status[g_id]['new_cam'].keys())
+        sorted_new_cams = sorted(list(all_new_cams))
+        
+        for nc in sorted_new_cams:
+            table.add_column(f"신캠\n{nc}조", justify="center")
 
         for g_id in range(1, self.num_groups + 1):
             st = status[g_id]
             m_cnt = st['genders'].get('남', 0)
             f_cnt = st['genders'].get('여', 0)
             gender_str = f"[cyan]{m_cnt}[/cyan] : [magenta]{f_cnt}[/magenta]"
-            table.add_row(f"새터 {g_id}조", f"{st['count']}명", gender_str, "배정 완료")
+            
+            row_data = [f"새터 {g_id}조", f"{st['count']}명", gender_str]
+            
+            for nc in sorted_new_cams:
+                cnt = st['new_cam'].get(nc, 0)
+                
+                # 색상 강조
+                if cnt == 0:
+                    cnt_str = "[dim]0[/dim]"  
+                elif cnt == 1:
+                    cnt_str = f"[bold yellow]{cnt}[/bold yellow]"  
+                elif cnt >= 3:
+                    cnt_str = f"[bold red]{cnt}[/bold red]"  
+                else: 
+                    cnt_str = f"[bold green]{cnt}[/bold green]" 
+                    
+                row_data.append(cnt_str)
+                
+            table.add_row(*row_data)
+            
         console.print(table)
 
     def save_result(self):
@@ -453,7 +543,6 @@ class TeamBuilder:
         
         self.df_members['최종 배정 조'] = self.df_members.index.map(self.result_groups)
         
-        # 이름과 고등학교 정보를 새로운 컬럼에 할당
         clean_names = {}
         clean_schools = {}
         
@@ -464,7 +553,6 @@ class TeamBuilder:
         self.df_members['성명'] = self.df_members.index.map(clean_names)
         self.df_members['출신고교명'] = self.df_members.index.map(clean_schools)
 
-        # 포맷팅
         phone_col = None
         for c in self.df_members.columns:
             if '전화' in str(c) or 'phone' in str(c).lower():
@@ -473,11 +561,14 @@ class TeamBuilder:
         if phone_col:
             self.df_members[phone_col] = self.df_members[phone_col].apply(format_phone_number)
 
+        id_col = next((c for c in self.df_members.columns if '주민' in str(c) or 'birth' in str(c).lower()), None)
+        if id_col:
+            self.df_members[id_col] = self.df_members[id_col].apply(format_id_number)
+
         gender_col = next((c for c in self.df_members.columns if '성별' in str(c) or 'gender' in str(c).lower()), None)
         if gender_col:
             self.df_members[gender_col] = self.df_members[gender_col].apply(format_gender_output)
 
-        # 4. 컬럼 순서 정리 및 [중복 컬럼 제거]
         cols = self.df_members.columns.tolist()
         target_order = ['최종 배정 조', '성명', '출신고교명'] 
         
@@ -492,11 +583,8 @@ class TeamBuilder:
                     break
                     
         for c in cols:
-            # 1. 이미 추가된 컬럼이면 건너뜀
             if c in added: continue
-            # 2. 원본 이름 컬럼(출신고교명+이름) 이면 건너뜀
             if c == self.original_name_col: continue 
-            
             target_order.append(c)
         
         final_df = self.df_members[target_order].sort_values(by=['최종 배정 조', '성명'])
