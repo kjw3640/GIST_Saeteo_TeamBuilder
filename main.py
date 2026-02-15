@@ -4,7 +4,7 @@ import os
 import time
 import random
 import re
-import unicodedata # [NEW] 글자 너비 계산을 위해 추가
+import unicodedata
 from datetime import datetime
 
 # ==========================================
@@ -33,6 +33,11 @@ from rich.prompt import Prompt
 from rich import box
 from rich.align import Align
 
+# openpyxl 관련 임포트 (디자인용)
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+from openpyxl.utils import get_column_letter
+
 custom_theme = Theme({
     "info": "bold cyan",
     "warning": "bold yellow",
@@ -47,7 +52,6 @@ console = Console(theme=custom_theme)
 # 1. 스마트 데이터 처리 및 검증 함수
 # ==========================================
 
-# [NEW] 화면상 실제 너비를 계산하는 함수 (한글=2, 영어/숫자=1)
 def get_display_width(s):
     width = 0
     for char in s:
@@ -57,23 +61,16 @@ def get_display_width(s):
             width += 1
     return width
 
-# [FIXED] 너비 기반 정렬로 2글자 이름도 줄 맞춤 완벽 해결
 def format_list_2col(items):
     if not items: return ""
     lines = []
-    target_width = 40 # 1열의 목표 너비 (넉넉하게 설정)
-    
+    target_width = 40
     for i in range(0, len(items), 2):
         item1 = items[i]
         item2 = items[i+1] if i+1 < len(items) else ""
-        
-        # 실제 차지하는 너비 계산
         w1 = get_display_width(item1)
-        # 필요한 공백 개수 계산
         padding = max(1, target_width - w1)
-        
         lines.append(f"{item1}{' ' * padding}{item2}")
-        
     return "\n".join(lines)
 
 def normalize_id_str(value):
@@ -90,32 +87,23 @@ def smart_get_year(value):
         if hasattr(value, 'year'): return value.year
         val_str = str(value).strip()
         if not val_str or val_str.lower() == 'nan': return 0
-        
         normalized_id = normalize_id_str(val_str)
-        
         if len(normalized_id) == 13 and normalized_id.isdigit():
             yy = int(normalized_id[:2])
             gender_digit = int(normalized_id[6])
-            if gender_digit in [3, 4, 7, 8]:
-                return 2000 + yy
-            else:
-                return 1900 + yy
-        
+            if gender_digit in [3, 4, 7, 8]: return 2000 + yy
+            else: return 1900 + yy
         if len(normalized_id) == 6 and normalized_id.isdigit():
              yy = int(normalized_id[:2])
              if 0 <= yy <= 30: return 2000 + yy
              else: return 1900 + yy
-
-        if len(val_str) == 4 and val_str.isdigit():
-            return int(val_str)
-            
+        if len(val_str) == 4 and val_str.isdigit(): return int(val_str)
         return int(float(val_str))
     except: return 0 
 
 def format_phone_number(value):
     try:
-        if isinstance(value, float):
-            value = int(value)
+        if isinstance(value, float): value = int(value)
         s = str(value).strip()
         if not s or s.lower() == 'nan': return ""
         if s.endswith('.0'): s = s[:-2]
@@ -127,14 +115,12 @@ def format_phone_number(value):
 
 def format_id_number(value):
     s = normalize_id_str(value)
-    if len(s) == 13 and s.isdigit():
-        return f"{s[:6]}-{s[6:]}"
+    if len(s) == 13 and s.isdigit(): return f"{s[:6]}-{s[6:]}"
     return value
 
 def validate_id_checksum(id_val):
     s = normalize_id_str(id_val)
-    if len(s) != 13 or not s.isdigit():
-        return False
+    if len(s) != 13 or not s.isdigit(): return False
     weights = [2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5]
     total = sum(int(s[i]) * weights[i] for i in range(12))
     check_digit = (11 - (total % 11)) % 10
@@ -148,8 +134,7 @@ def format_gender_output(value):
 
 def normalize_gender(value):
     s = str(value)
-    for char in ['\ufeff', '\u200b', '\xa0', ' ', '\t', '\n', '?']:
-        s = s.replace(char, '')
+    for char in ['\ufeff', '\u200b', '\xa0', ' ', '\t', '\n', '?']: s = s.replace(char, '')
     s = s.strip()
     if '남' in s or 'Man' in s or 'Male' in s or 'M' in s: return '남'
     if '여' in s or 'Woman' in s or 'Female' in s or 'F' in s: return '여'
@@ -164,34 +149,28 @@ def normalize_school_name(text):
     text = str(text).strip()
     text = text.replace('고등학교', '고')
     text = text.replace('과고', '과학고')
+    text = text.replace('여자고', '여고')
+    if '교원대학교부설고' in text: text = text.replace('교원대학교부설고', '교대부고')
+    if '대학교사범대학부설고' in text: text = text.replace('대학교사범대학부설고', '사대부고')
     return text
 
 def normalize_dept_name(text):
     text = str(text).strip()
-    if '도전탐색과정' in text:
-        return '도전탐색과정'
+    if '도전탐색과정' in text: return '도전탐색과정'
     return text
 
 def split_school_and_name(raw_text):
     text = str(raw_text).strip()
     if len(text) <= 4: return None, text
-
     cleaned_text = re.sub(r'[\+\,\/\_\-]', ' ', text)
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
-
-    # 1. 공백이 있는 경우: 맨 뒤 어절이 이름인지 확인 (Right-to-Left Strategy)
     if ' ' in cleaned_text:
         parts = cleaned_text.split()
         last_part = parts[-1]
-        
-        # 맨 뒤가 2~4글자 한글이면 이름으로 간주
         if 2 <= len(last_part) <= 4 and re.match(r'^[가-힣]+$', last_part):
             real_name = last_part
-            # 나머지 앞부분을 전부 합쳐서 학교명으로 (공백 제거)
             potential_school = "".join(parts[:-1]) 
             return potential_school, real_name
-
-    # 2. 공백이 없거나 위 조건이 안 맞는 경우 정규식 사용
     match = re.search(r"^(.*?)(고등학교|학교|고)\s?([가-힣]{2,4})$", text)
     if match:
         school_part = match.group(1) + match.group(2)
@@ -199,51 +178,36 @@ def split_school_and_name(raw_text):
         school_part = school_part.replace(" ", "")
         if not match.group(1): return None, text
         return school_part, name_part
-        
     return None, text
 
-# [UPGRADE] 절대 균등 분배(Max Diff <= 1) 알고리즘
+# [UPGRADE] 절대 균등 분배(Max Diff <= 1)
 def calculate_score(group_id, member, group_status, constraints, weights, ignore_age=False, limits_config=None):
     leader_min_year = constraints['leader_years'].get(group_id, 0)
-    
     if limits_config:
         if group_status[group_id]['count'] >= limits_config['total']: return -float('inf')
         my_gender = member['gender']
         current_gender_cnt = group_status[group_id]['genders'].get(my_gender, 0)
         if my_gender == '남' and current_gender_cnt >= limits_config['male']: return -float('inf')
         elif my_gender == '여' and current_gender_cnt >= limits_config['female']: return -float('inf')
-
     if not ignore_age and leader_min_year > 0 and member['birth_year'] < leader_min_year:
         return -float('inf')
-
     if member['name_key'] in group_status[group_id]['names']:
         return -float('inf')
-
     score = 0
     score -= group_status[group_id]['count'] * weights['size'] 
     score -= group_status[group_id]['genders'].get(member['gender'], 0) * weights['gender']
     score -= group_status[group_id]['majors'].get(member['major'], 0) * weights['major']
     score -= group_status[group_id]['birth_years'].get(member['birth_year'], 0) * weights['birth_year']
-
     nc = member['new_cam']
     nc_count = group_status[group_id]['new_cam'].get(nc, 0)
-    
     nc_base = constraints.get('new_cam_bases', {}).get(nc, 0) 
     nc_rem = constraints.get('new_cam_rems', {}).get(nc, 0)   
-    
-    if nc_count >= nc_base + 1:
-        return -float('inf')
-        
+    if nc_count >= nc_base + 1: return -float('inf')
     if nc_count == nc_base:
         groups_at_max = sum(1 for g in group_status.values() if g['new_cam'].get(nc, 0) > nc_base)
-        if groups_at_max >= nc_rem:
-            return -float('inf')
-            
-    if nc_count < nc_base:
-        score += 1000000 
-    elif nc_count == nc_base:
-        score += 50 
-
+        if groups_at_max >= nc_rem: return -float('inf')
+    if nc_count < nc_base: score += 1000000 
+    elif nc_count == nc_base: score += 50 
     return score
 
 # ==========================================
@@ -254,6 +218,7 @@ class TeamBuilder:
     def __init__(self):
         self.num_groups = 0
         self.leaders = {} 
+        self.leader_names = {} 
         self.members = []
         self.df_members = None
         self.result_groups = {} 
@@ -270,11 +235,10 @@ class TeamBuilder:
         print()
         title_text = Text("🦄 GIST 새내기배움터 조 자동 배정 프로그램 🚀", style="bold white", justify="center")
         subtitle_text = Text("\nFairness • Balance • Optimization", style="dim white", justify="center")
-        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 2 . 13 ]", style="bold bright_green", justify="center")
+        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 2 . 15 ]", style="bold bright_green", justify="center")
         header_content = Text.assemble(title_text, subtitle_text, dept_text, justify="center")
         console.print(Panel(header_content, box=box.DOUBLE, border_style="bright_green", padding=(1, 4), style="on black"))
         print("\n")
-
         terms_text = (
             "[bold green]1. 개인정보 처리 안내[/bold green]\n"
             "   본 프로그램은 로컬 환경(내 컴퓨터)에서 엑셀 데이터를 읽고 처리할 뿐, 외부 서버로 전송하지 않습니다.\n"
@@ -284,9 +248,7 @@ class TeamBuilder:
             "[bold green]3. 사용 목적[/bold green]\n"
             "   본 프로그램은 새내기배움터 및 학과 행사를 위해서만 사용하여야 합니다."
         )
-
         console.print(Panel(terms_text, title="[bold white]📜 이용 약관 및 안내 사항[/bold white]", border_style="green", padding=(1, 2)))
-        
         while True:
             choice = console.input("\n[bold yellow]위 사항에 모두 동의하십니까? (y/n): [/bold yellow]").strip().lower()
             if choice == 'y':
@@ -338,6 +300,18 @@ class TeamBuilder:
                         else:
                             y1, y2 = smart_get_year(row[year_cols[0]]), smart_get_year(row[year_cols[1]])
                         self.leaders[g_id] = min(y1, y2)
+
+                        if use_indices:
+                            name1 = str(row.iloc[1]).strip()
+                            name2 = str(row.iloc[3]).strip()
+                        else:
+                            name_cols = [c for c in l_df.columns if '이름' in str(c) or '성명' in str(c)]
+                            if len(name_cols) >= 2:
+                                name1 = str(row[name_cols[0]]).strip()
+                                name2 = str(row[name_cols[1]]).strip()
+                            else:
+                                name1, name2 = "", ""
+                        self.leader_names[g_id] = [name1, name2]
                     except: continue
                 
                 self.num_groups = max_group_id
@@ -349,18 +323,14 @@ class TeamBuilder:
         try:
             with console.status("[bold cyan]참가자 데이터를 처리 및 검증하는 중...", spinner="dots"):
                 m_df = pd.read_excel(member_file)
-                
                 cols = m_df.columns
                 col_map = {}
-                
-                # [SIMPLE] 전화번호 컬럼 매핑: 휴대폰/전화 보이면 바로 끝!
                 for c in cols:
                     c_str = str(c).strip()
                     if 'phone' not in col_map and ('휴대폰' in c_str or '전화' in c_str): 
                         col_map['phone'] = c
-                        break # 하나 찾으면 바로 루프 종료 (First-Win)
+                        break 
                 
-                # 나머지 컬럼 매핑
                 for c in cols:
                     c_str = str(c).strip() 
                     if 'name' not in col_map and ('성명' in c_str or '이름' in c_str): col_map['name'] = c
@@ -370,31 +340,17 @@ class TeamBuilder:
                     elif 'gender' not in col_map and '성별' in c_str: col_map['gender'] = c
                     elif 'birth' not in col_map and ('생년' in c_str or '주민' in c_str): col_map['birth'] = c
 
-                if 'name' in col_map:
-                    self.original_name_col = col_map['name']
-
+                if 'name' in col_map: self.original_name_col = col_map['name']
                 required_keys = ['name', 'new_cam', 'major', 'gender', 'phone', 'birth']
                 missing_keys = [k for k in required_keys if k not in col_map]
-
                 if missing_keys:
-                    console.print(f"[error]❌ 필수 컬럼 찾기 실패.[/error]")
-                    console.print(f"[dim]누락된 항목: {missing_keys}[/dim]")
+                    console.print(f"[error]❌ 필수 컬럼 찾기 실패: {missing_keys}[/error]")
                     return False
 
                 processed_members = []
-                
-                duplicates_log = []
-                minors_log = []
-                invalid_id_log = [] 
-                missing_school_log = []
-                
-                seen_phones = set()
-                seen_ids = set()
+                duplicates_log, minors_log, invalid_id_log, missing_school_log = [], [], [], []
+                seen_phones, seen_ids = set(), set()
 
-            # ------------------------------------------------------------------
-            # [Step 2] 인터랙티브 데이터 검증 및 수정
-            # ------------------------------------------------------------------
-            
             print()
             console.print("[bold yellow]⚡ 데이터 검증 및 대화형 수정을 시작합니다...[/bold yellow]")
             time.sleep(0.5)
@@ -402,7 +358,6 @@ class TeamBuilder:
             for idx, row in m_df.iloc[::-1].iterrows():
                 raw_name_input = str(row[col_map['name']])
                 new_cam_val = int(row[col_map['new_cam']])
-                
                 extracted_school, real_name = split_school_and_name(raw_name_input)
                 
                 needs_correction = False
@@ -417,14 +372,11 @@ class TeamBuilder:
                 elif re.search(r'[\(\)0-9]', real_name) or len(real_name) > 5:
                     needs_correction = True
                     issue_type = "이름 형식 오류 (특수문자/길이)"
-
                 elif not extracted_school and len(real_name) <= 4:
                     has_excel_school = False
                     if 'highschool' in col_map:
                         val = str(row[col_map['highschool']])
-                        if val and val.lower() != 'nan' and val.strip():
-                            has_excel_school = True
-                    
+                        if val and val.lower() != 'nan' and val.strip(): has_excel_school = True
                     if not has_excel_school:
                         needs_correction = True
                         issue_type = "학교명 미기재"
@@ -432,18 +384,11 @@ class TeamBuilder:
                 if needs_correction:
                     console.print(Panel(
                         f"[bold red]⚠️  데이터 확인 필요 ({issue_type})[/bold red]\n"
-                        f"입력값: [yellow]{raw_name_input}[/yellow]\n\n"
+                        f"입력값: [yellow]{raw_name_input}[/yellow]\n"
                         f"현재 인식된 학교: [cyan]{extracted_school if extracted_school else '없음'}[/cyan]\n"
-                        f"현재 인식된 이름: [cyan]{real_name}[/cyan]",
-                        border_style="red"
+                        f"현재 인식된 이름: [cyan]{real_name}[/cyan]", border_style="red"
                     ))
-                    
-                    user_resp = Prompt.ask(
-                        "[bold white]수정하시겠습니까?[/bold white] (올바른 '[green]학교명 이름[/green]' 입력 / 엔터치면 원본 유지)",
-                        default="",
-                        show_default=False
-                    ).strip()
-                    
+                    user_resp = Prompt.ask("[bold white]수정하시겠습니까?[/bold white] (올바른 '[green]학교명 이름[/green]' 입력 / 엔터치면 원본 유지)", default="", show_default=False).strip()
                     if user_resp:
                         new_school, new_name = split_school_and_name(user_resp)
                         if not new_school and len(new_name) <= 4:
@@ -453,17 +398,14 @@ class TeamBuilder:
                             extracted_school = new_school
                             real_name = new_name
                         console.print(f"[green]✔ 수정됨: 학교='{extracted_school}', 이름='{real_name}'[/green]")
-                    else:
-                        console.print("[dim]원본 유지 (또는 미기재)[/dim]")
+                    else: console.print("[dim]원본 유지 (또는 미기재)[/dim]")
                     print()
 
                 if not extracted_school and len(real_name) <= 4:
                     excel_school_val = ""
                     if 'highschool' in col_map:
                         val = str(row[col_map['highschool']])
-                        if val and val.lower() != 'nan':
-                            excel_school_val = val.strip()
-                    
+                        if val and val.lower() != 'nan': excel_school_val = val.strip()
                     if not excel_school_val:
                         missing_school_log.append(f"{real_name} (신캠 {new_cam_val}조)")
                         extracted_school = "미기재" 
@@ -471,8 +413,7 @@ class TeamBuilder:
                 excel_school = ""
                 if 'highschool' in col_map:
                     val = str(row[col_map['highschool']])
-                    if val and val.lower() != 'nan':
-                        excel_school = val
+                    if val and val.lower() != 'nan': excel_school = val
                 
                 final_highschool = excel_school if excel_school else (extracted_school if extracted_school else "미기재")
                 final_highschool = normalize_school_name(final_highschool)
@@ -490,40 +431,35 @@ class TeamBuilder:
                 if is_duplicate:
                     duplicates_log.append(f"{real_name} (신캠 {new_cam_val}조)")
                     continue 
-                
                 if clean_phone: seen_phones.add(clean_phone)
                 if clean_id and len(clean_id) == 13: seen_ids.add(clean_id)
 
                 is_minor = birth_year >= (event_year - 18)
                 is_valid_id = False
-                if clean_id and len(clean_id) == 13:
-                    is_valid_id = validate_id_checksum(clean_id)
+                if clean_id and len(clean_id) == 13: is_valid_id = validate_id_checksum(clean_id)
                 
+                # [NEW] ID issue flag logic
+                is_id_problem = False
                 if is_minor:
                     if is_valid_id:
                         minors_log.append(f"{real_name} (신캠 {new_cam_val}조)")
                         continue
                     else:
                         invalid_id_log.append(f"{real_name} (신캠 {new_cam_val}조) - [bold red]미성년/오기재 불분명[/bold red]")
-                
+                        is_id_problem = True
                 elif not is_minor and (clean_id and len(clean_id) == 13) and not is_valid_id:
                     invalid_id_log.append(f"{real_name} (신캠 {new_cam_val}조)")
+                    is_id_problem = True
 
                 raw_gender = row[col_map['gender']]
                 gender = normalize_gender(raw_gender)
                 
                 info = {
-                    'original_idx': idx,
-                    'name': real_name, 
-                    'name_key': get_name_key(real_name),
-                    'birth_year': birth_year,
-                    'gender': gender, 
-                    'major': clean_major,
-                    'new_cam': new_cam_val,
-                    'highschool': final_highschool, 
-                    'phone': row[col_map['phone']], 
-                    'raw_birth': raw_birth,         
-                    'clean_id': clean_id 
+                    'original_idx': idx, 'name': real_name, 'name_key': get_name_key(real_name),
+                    'birth_year': birth_year, 'gender': gender, 'major': clean_major,
+                    'new_cam': new_cam_val, 'highschool': final_highschool, 
+                    'phone': row[col_map['phone']], 'raw_birth': raw_birth, 'clean_id': clean_id,
+                    'is_id_problem': is_id_problem # [NEW] flag added
                 }
                 processed_members.append(info)
             
@@ -534,19 +470,15 @@ class TeamBuilder:
                 print()
                 console.print("[bold white on dark_red] 🚨 데이터 검증 및 전처리 리포트 [/bold white on dark_red]", justify="left")
                 time.sleep(0.5)
-                
                 if duplicates_log:
                     console.print(Panel(format_list_2col(duplicates_log), title="[bold red]중복 제출자 자동 삭제됨 (최신 데이터 유지)[/bold red]", border_style="red"))
                     time.sleep(0.3)
-                
                 if minors_log:
                     console.print(Panel(format_list_2col(minors_log), title="[bold red]미성년자 지원자 자동 삭제됨[/bold red]", border_style="red"))
                     time.sleep(0.3)
-
                 if invalid_id_log:
                     console.print(Panel(format_list_2col(invalid_id_log), title="[bold yellow]주민번호 오기재 확인 (확인 필요 - 데이터 유지됨)[/bold yellow]", border_style="yellow"))
                     time.sleep(0.3)
-                    
                 if missing_school_log:
                     console.print(Panel(format_list_2col(missing_school_log), title="[bold yellow]학교명 미기재 (확인 필요 - '미기재'로 저장됨)[/bold yellow]", border_style="yellow"))
                     time.sleep(0.3)
@@ -563,13 +495,11 @@ class TeamBuilder:
             import traceback
             traceback.print_exc()
             return False
-            
         return True
 
     def assign_teams(self):
         print()
         time.sleep(0.5)
-
         total_m = sum(1 for m in self.members if m['gender'] == '남')
         total_f = sum(1 for m in self.members if m['gender'] == '여')
         
@@ -592,30 +522,25 @@ class TeamBuilder:
             new_cam_bases[nc] = count // self.num_groups  
             new_cam_rems[nc] = count % self.num_groups    
         
-        max_retries = 10000 
+        max_retries = 50000
         success = False
         
         with console.status("[bold green]성비와 인원을 완벽하게 맞추는 중... (엄격한 균등 분배)[/bold green]", spinner="bouncingBar") as status:
             for attempt in range(1, max_retries + 1):
                 random.shuffle(male_slots)
                 random.shuffle(female_slots)
-                
                 temp_totals = [m + f for m, f in zip(male_slots, female_slots)]
-                if max(temp_totals) - min(temp_totals) > 1:
-                    continue 
+                if max(temp_totals) - min(temp_totals) > 1: continue 
 
                 self.male_limits = {i: c for i, c in zip(range(1, self.num_groups + 1), male_slots)}
                 self.female_limits = {i: c for i, c in zip(range(1, self.num_groups + 1), female_slots)}
                 self.total_limits = {i: m+f for i, m, f in zip(range(1, self.num_groups+1), male_slots, female_slots)}
 
                 group_status = {
-                    i: {
-                        'count': 0, 'names': [], 'genders': {},
-                        'majors': {}, 'birth_years': {}, 'new_cam': {}
-                    } for i in range(1, self.num_groups + 1)
+                    i: { 'count': 0, 'names': [], 'genders': {}, 'majors': {}, 'birth_years': {}, 'new_cam': {} } 
+                    for i in range(1, self.num_groups + 1)
                 }
                 assignments = {m['original_idx']: None for m in self.members}
-                
                 sorted_members = sorted(self.members, key=lambda x: x['birth_year'])
 
                 def try_assign(member_list, ignore_age=False):
@@ -628,16 +553,9 @@ class TeamBuilder:
                         
                         for g_id in candidates:
                             score = calculate_score(g_id, member, group_status, 
-                                                 {'leader_years': self.leaders, 
-                                                  'new_cam_bases': new_cam_bases,
-                                                  'new_cam_rems': new_cam_rems}, 
-                                                 self.weights, 
-                                                 ignore_age=ignore_age, 
-                                                 limits_config={
-                                                     'total': self.total_limits[g_id],
-                                                     'male': self.male_limits[g_id],
-                                                     'female': self.female_limits[g_id]
-                                                 })
+                                                 {'leader_years': self.leaders, 'new_cam_bases': new_cam_bases, 'new_cam_rems': new_cam_rems}, 
+                                                 self.weights, ignore_age=ignore_age, 
+                                                 limits_config={'total': self.total_limits[g_id], 'male': self.male_limits[g_id], 'female': self.female_limits[g_id]})
                             if score > best_score:
                                 best_score = score
                                 best_group = g_id
@@ -645,8 +563,7 @@ class TeamBuilder:
                         if best_group != -1 and best_score > -float('inf'):
                             assignments[member['original_idx']] = best_group
                             self._update_status(group_status, best_group, member)
-                        else:
-                            failed.append(member)
+                        else: failed.append(member)
                     return failed
 
                 unassigned = try_assign(sorted_members, ignore_age=False)
@@ -658,9 +575,7 @@ class TeamBuilder:
                     success = True
                     self.result_groups = assignments
                     break
-                
-                if attempt % 100 == 0:
-                    status.update(f"[bold yellow]수학적 최적화 탐색 중... (Attempt {attempt})[/bold yellow]")
+                if attempt % 100 == 0: status.update(f"[bold yellow]수학적 최적화 탐색 중... (Attempt {attempt})[/bold yellow]")
 
         if success:
             console.print(f"\n[success]✨ 배정 성공! (총 시도: {attempt}회)[/success]")
@@ -685,7 +600,6 @@ class TeamBuilder:
     def _print_stats(self, status):
         print()
         time.sleep(0.5) 
-
         table = Table(title="📊 [bold]최종 배정 결과[/bold]", border_style="cyan", header_style="bold white on dark_green")
         table.add_column("조 이름", justify="center", style="bold cyan")
         table.add_column("인원", justify="center", style="white")
@@ -695,44 +609,31 @@ class TeamBuilder:
         for g_id in range(1, self.num_groups + 1):
             all_new_cams.update(status[g_id]['new_cam'].keys())
         sorted_new_cams = sorted(list(all_new_cams))
-        
-        for nc in sorted_new_cams:
-            table.add_column(f"신캠\n{nc}조", justify="center")
+        for nc in sorted_new_cams: table.add_column(f"신캠\n{nc}조", justify="center")
 
         for g_id in range(1, self.num_groups + 1):
             st = status[g_id]
             m_cnt = st['genders'].get('남', 0)
             f_cnt = st['genders'].get('여', 0)
             gender_str = f"[cyan]{m_cnt}[/cyan] : [magenta]{f_cnt}[/magenta]"
-            
             row_data = [f"새터 {g_id}조", f"{st['count']}명", gender_str]
-            
             for nc in sorted_new_cams:
                 cnt = st['new_cam'].get(nc, 0)
-                
-                if cnt == 0:
-                    cnt_str = "[dim]0[/dim]"  
-                elif cnt == 1:
-                    cnt_str = f"[bold yellow]{cnt}[/bold yellow]"  
-                elif cnt >= 3:
-                    cnt_str = f"[bold red]{cnt}[/bold red]"  
-                else: 
-                    cnt_str = f"[bold green]{cnt}[/bold green]" 
-                    
+                if cnt == 0: cnt_str = "[dim]0[/dim]"  
+                elif cnt == 1: cnt_str = f"[bold yellow]{cnt}[/bold yellow]"  
+                elif cnt >= 3: cnt_str = f"[bold red]{cnt}[/bold red]"  
+                else: cnt_str = f"[bold green]{cnt}[/bold green]" 
                 row_data.append(cnt_str)
-                
             table.add_row(*row_data)
-            
         console.print(table)
 
     def save_result(self):
         print()
         time.sleep(0.5) 
-        console.print("\n[bold]💾 결과 저장 중...[/bold]")
+        console.print("\n[bold]💾 결과 엑셀 파일 생성 중...[/bold]")
         
         valid_indices = [m['original_idx'] for m in self.members]
         final_df = self.df_members.loc[valid_indices].copy()
-        
         final_df['최종 배정 조'] = final_df.index.map(self.result_groups)
         
         clean_names = {m['original_idx']: m['name'] for m in self.members}
@@ -741,49 +642,228 @@ class TeamBuilder:
         
         final_df['성명'] = final_df.index.map(clean_names)
         final_df['출신고교명'] = final_df.index.map(clean_schools)
+        if 'major' in self.original_name_col: pass 
         
-        major_col = next((c for c in final_df.columns if '학과' in str(c) or '학부' in str(c)), None)
-        if major_col:
-            final_df[major_col] = final_df.index.map(clean_majors)
-
-        phone_col = None
-        for c in final_df.columns:
-            if '전화' in str(c) or 'phone' in str(c).lower():
-                phone_col = c
-                break
-        if phone_col:
-            final_df[phone_col] = final_df[phone_col].apply(format_phone_number)
-
-        id_col = next((c for c in final_df.columns if '주민' in str(c) or 'birth' in str(c).lower()), None)
-        if id_col:
-            final_df[id_col] = final_df[id_col].apply(format_id_number)
-
-        gender_col = next((c for c in final_df.columns if '성별' in str(c) or 'gender' in str(c).lower()), None)
-        if gender_col:
-            final_df[gender_col] = final_df[gender_col].apply(format_gender_output)
-
-        cols = final_df.columns.tolist()
-        target_order = ['최종 배정 조', '성명', '출신고교명'] 
+        major_col = next((c for c in final_df.columns if '학과' in str(c) or '학부' in str(c)), '학과')
+        if major_col in final_df.columns: final_df[major_col] = final_df.index.map(clean_majors)
         
-        priority_cols = ['신캠조', '학과', '학부', '성별', '전화번호', '생년월일']
-        added = set(target_order)
+        phone_col = next((c for c in final_df.columns if '전화' in str(c) or 'phone' in str(c).lower()), '전화번호')
+        if phone_col in final_df.columns: final_df[phone_col] = final_df[phone_col].apply(format_phone_number)
         
-        for p_key in priority_cols:
-            for c in cols:
-                if p_key in c and c not in added:
-                    target_order.append(c)
-                    added.add(c)
-                    break
+        id_col = next((c for c in final_df.columns if '주민' in str(c) or 'birth' in str(c).lower()), '주민번호')
+        if id_col in final_df.columns: final_df[id_col] = final_df[id_col].apply(format_id_number)
+        
+        gender_col = next((c for c in final_df.columns if '성별' in str(c) or 'gender' in str(c).lower()), '성별')
+        if gender_col in final_df.columns: final_df[gender_col] = final_df[gender_col].apply(format_gender_output)
+        
+        new_cam_col = next((c for c in final_df.columns if '신캠' in str(c)), '신캠조')
+
+        # -----------------------------------------------------------
+        # OpenPyXL을 이용한 고급 엑셀 생성
+        # -----------------------------------------------------------
+        wb = Workbook()
+        
+        font_main = Font(name='Pretendard', size=11)
+        font_bold = Font(name='Pretendard', size=11, bold=True)
+        
+        GROUP_COLORS = [
+            "D3F39F", # 1: Lime
+            "FAFAA0", # 2: Yellow
+            "FCE29D", # 3: Mustard/Gold
+            "F6CFA6", # 4: Orange
+            "F2B2B8", # 5: Pink
+            "F6BFF8", # 6: Light Purple
+            "D5C2F6", # 7: Purple
+            "C2DFF8", # 8: Blue
+            "C0F7FA", # 9: Cyan
+            "C3F8CD"  # 10: Mint
+        ]
+        
+        fill_col_b_green = PatternFill(start_color="92D050", end_color="92D050", fill_type="solid")
+        fill_group_header_black = PatternFill(start_color="000000", end_color="000000", fill_type="solid")
+        font_white = Font(name='Pretendard', size=12, bold=True, color="FFFFFF")
+        
+        fill_leader_green = PatternFill(start_color="92D050", end_color="92D050", fill_type="solid")
+        fill_gray = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
+        fill_light_gray = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+        fill_red = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid") # [NEW]
+        
+        border_thin = Border(left=Side(style='thin'), right=Side(style='thin'), 
+                             top=Side(style='thin'), bottom=Side(style='thin'))
+        align_center = Alignment(horizontal='center', vertical='center')
+
+        # [NEW] ID Problem Map
+        id_problem_map = {m['original_idx']: m.get('is_id_problem', False) for m in self.members}
+
+        # -----------------------------------------------------------
+        # 1. [전체] 시트
+        # -----------------------------------------------------------
+        ws_all = wb.active
+        ws_all.title = "전체"
+        ws_all.sheet_view.showGridLines = False 
+        
+        headers = ["새터 조", "이름", "출신고교", "학과", "성별", "신캠 조", "전화번호", "주민번호"]
+        df_cols = ["최종 배정 조", "성명", "출신고교명", major_col, gender_col, new_cam_col, phone_col, id_col]
+        
+        for idx, h in enumerate(headers, start=2): 
+            cell = ws_all.cell(row=2, column=idx, value=h)
+            cell.font = font_bold
+            cell.fill = fill_gray 
+            cell.border = border_thin
+            cell.alignment = align_center
+        
+        sorted_df = final_df.sort_values(by=['최종 배정 조', '성명'])
+        row_idx = 3
+        for _, row in sorted_df.iterrows():
+            g_num = row['최종 배정 조']
+            hex_color = GROUP_COLORS[(g_num - 1) % len(GROUP_COLORS)]
+            fill_this_group = PatternFill(start_color=hex_color, end_color=hex_color, fill_type="solid")
+
+            for c_idx, col_key in enumerate(df_cols, start=2):
+                val = row.get(col_key, "")
+                cell = ws_all.cell(row=row_idx, column=c_idx, value=val)
+                cell.font = font_main
+                cell.border = border_thin
+                cell.alignment = align_center
+                
+                if c_idx == 2: # B열 (새터 조)
+                    cell.fill = fill_this_group
+                    cell.font = font_bold
+                
+                # [NEW] Highschool '미기재' -> Gray
+                if col_key == "출신고교명" and str(val).strip() == "미기재":
+                    cell.fill = fill_gray
+                
+                # [NEW] ID Problem -> Red
+                if col_key == id_col and id_problem_map.get(row.name, False):
+                    cell.fill = fill_red
+
+            ws_all.row_dimensions[row_idx].height = 18
+            row_idx += 1
+            
+        ws_all.column_dimensions['A'].width = 3.5 
+        ws_all.column_dimensions['B'].width = 6.33
+        ws_all.column_dimensions['C'].width = 13
+        ws_all.column_dimensions['D'].width = 20.83
+        ws_all.column_dimensions['E'].width = 18
+        ws_all.column_dimensions['F'].width = 8
+        ws_all.column_dimensions['G'].width = 8
+        ws_all.column_dimensions['H'].width = 20
+        ws_all.column_dimensions['I'].width = 22
+        ws_all.column_dimensions['J'].width = 3.5
+        ws_all.row_dimensions[2].height = 18
+
+        # -----------------------------------------------------------
+        # 2. [조별] 시트
+        # -----------------------------------------------------------
+        for g_id in range(1, self.num_groups + 1):
+            ws = wb.create_sheet(title=f"{g_id}조")
+            ws.sheet_view.showGridLines = False 
+            
+            hex_color = GROUP_COLORS[(g_id - 1) % len(GROUP_COLORS)]
+            fill_group_color = PatternFill(start_color=hex_color, end_color=hex_color, fill_type="solid")
+            ws.sheet_properties.tabColor = hex_color
+
+            # --- 상단 레이아웃 ---
+            b2 = ws.cell(row=2, column=2, value=f"{g_id}조")
+            b2.fill = fill_group_header_black
+            b2.font = font_white
+            b2.alignment = align_center
+            b2.border = border_thin
+            
+            sub_headers = ["이름", "학과", "성별", "전화번호"]
+            for idx, h in enumerate(sub_headers, start=3):
+                cell = ws.cell(row=2, column=idx, value=h)
+                cell.fill = fill_group_color
+                cell.font = font_bold
+                cell.alignment = align_center
+                cell.border = border_thin
+                
+            ws.merge_cells(start_row=3, start_column=2, end_row=4, end_column=2)
+            b3 = ws.cell(row=3, column=2, value="조장")
+            b3.fill = fill_group_color 
+            b3.font = font_bold
+            b3.alignment = align_center
+            b3.border = border_thin
+            ws.cell(row=4, column=2).border = border_thin
+            
+            leaders = self.leader_names.get(g_id, ["", ""])
+            c3 = ws.cell(row=3, column=3, value=leaders[0])
+            c3.fill = fill_gray
+            c3.font = font_main
+            c3.alignment = align_center
+            c3.border = border_thin
+            c4 = ws.cell(row=4, column=3, value=leaders[1])
+            c4.fill = fill_gray
+            c4.font = font_main
+            c4.alignment = align_center
+            c4.border = border_thin
+            
+            for r in [3, 4]:
+                for c in [4, 5, 6]:
+                    cell = ws.cell(row=r, column=c)
+                    cell.fill = fill_gray
+                    cell.border = border_thin
                     
-        for c in cols:
-            if c in added: continue
-            if c == self.original_name_col: continue 
-            target_order.append(c)
-        
-        final_df = final_df[target_order].sort_values(by=['최종 배정 조', '성명'])
-        
+            h2 = ws.cell(row=2, column=8, value="담당 문행위원")
+            h2.fill = fill_gray
+            h2.font = font_bold
+            h2.alignment = align_center
+            h2.border = border_thin
+            
+            i2 = ws.cell(row=2, column=9, value="전화번호")
+            i2.fill = fill_gray
+            i2.font = font_bold
+            i2.alignment = align_center
+            i2.border = border_thin
+            
+            h3 = ws.cell(row=3, column=8)
+            h3.fill = fill_light_gray
+            h3.border = border_thin
+            h4 = ws.cell(row=4, column=8)
+            h4.fill = fill_light_gray
+            h4.border = border_thin
+
+            ws.cell(row=3, column=9).border = border_thin
+            ws.cell(row=4, column=9).border = border_thin
+
+            # --- 멤버 리스트 ---
+            group_members = final_df[final_df['최종 배정 조'] == g_id].sort_values('성명')
+            target_cols = ['성명', major_col, gender_col, phone_col]
+            
+            r_idx = 5
+            for _, row in group_members.iterrows():
+                num_cell = ws.cell(row=r_idx, column=2, value=r_idx-4)
+                num_cell.fill = fill_group_color 
+                num_cell.font = font_bold
+                num_cell.alignment = align_center
+                num_cell.border = border_thin
+                
+                for c_idx, key in enumerate(target_cols, start=3):
+                    cell = ws.cell(row=r_idx, column=c_idx, value=row.get(key, ""))
+                    cell.font = font_main
+                    cell.alignment = align_center
+                    cell.border = border_thin
+                
+                ws.row_dimensions[r_idx].height = 20
+                r_idx += 1
+            
+            ws.column_dimensions['A'].width = 3.5
+            ws.column_dimensions['B'].width = 6.33
+            ws.column_dimensions['C'].width = 13
+            ws.column_dimensions['D'].width = 18
+            ws.column_dimensions['E'].width = 8
+            ws.column_dimensions['F'].width = 20
+            ws.column_dimensions['G'].width = 6
+            ws.column_dimensions['H'].width = 13
+            ws.column_dimensions['I'].width = 20
+            ws.column_dimensions['J'].width = 3.5
+            
+            for r in range(2, 5):
+                ws.row_dimensions[r].height = 20
+
         filename = f"team_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        final_df.to_excel(filename, index=False)
+        wb.save(filename)
         
         console.print(f"[success]✔ 모든 작업이 완료되었습니다![/success]")
         console.print(f"   📂 저장된 파일: [underline bold]{filename}[/underline bold]\n")
