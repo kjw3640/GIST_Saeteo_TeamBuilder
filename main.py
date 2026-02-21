@@ -180,34 +180,63 @@ def split_school_and_name(raw_text):
         return school_part, name_part
     return None, text
 
-# [UPGRADE] 절대 균등 분배(Max Diff <= 1)
+# [UPGRADE] 절대 균등 분배 + 동명이인(조장 포함) 인접 조 회피 로직 추가
 def calculate_score(group_id, member, group_status, constraints, weights, ignore_age=False, limits_config=None):
     leader_min_year = constraints['leader_years'].get(group_id, 0)
+    
     if limits_config:
         if group_status[group_id]['count'] >= limits_config['total']: return -float('inf')
         my_gender = member['gender']
         current_gender_cnt = group_status[group_id]['genders'].get(my_gender, 0)
         if my_gender == '남' and current_gender_cnt >= limits_config['male']: return -float('inf')
         elif my_gender == '여' and current_gender_cnt >= limits_config['female']: return -float('inf')
+        
     if not ignore_age and leader_min_year > 0 and member['birth_year'] < leader_min_year:
         return -float('inf')
+        
+    # 1. 같은 조 새내기 간 동명이인 회피 (절대 금지)
     if member['name_key'] in group_status[group_id]['names']:
         return -float('inf')
+        
+    # 2. 해당 조의 조장과 동명이인 회피 (절대 금지)
+    group_leaders = constraints.get('leader_names', {}).get(group_id, [])
+    for l_name in group_leaders:
+        if l_name.strip() and get_name_key(l_name) == member['name_key']:
+            return -float('inf')
+
     score = 0
+    
+    # 3. [NEW] 인접 조(앞, 뒤) 동명이인 회피 (강력한 페널티 부여: 최대한 배정되지 않도록)
+    for adj_id in [group_id - 1, group_id + 1]:
+        # 인접 조의 새내기 체크
+        if adj_id in group_status:
+            if member['name_key'] in group_status[adj_id]['names']:
+                score -= 50000
+        # 인접 조의 조장 체크
+        adj_leaders = constraints.get('leader_names', {}).get(adj_id, [])
+        for l_name in adj_leaders:
+            if l_name.strip() and get_name_key(l_name) == member['name_key']:
+                score -= 50000
+
+    # 기존 밸런스 페널티
     score -= group_status[group_id]['count'] * weights['size'] 
     score -= group_status[group_id]['genders'].get(member['gender'], 0) * weights['gender']
     score -= group_status[group_id]['majors'].get(member['major'], 0) * weights['major']
     score -= group_status[group_id]['birth_years'].get(member['birth_year'], 0) * weights['birth_year']
+    
     nc = member['new_cam']
     nc_count = group_status[group_id]['new_cam'].get(nc, 0)
     nc_base = constraints.get('new_cam_bases', {}).get(nc, 0) 
     nc_rem = constraints.get('new_cam_rems', {}).get(nc, 0)   
+    
     if nc_count >= nc_base + 1: return -float('inf')
     if nc_count == nc_base:
         groups_at_max = sum(1 for g in group_status.values() if g['new_cam'].get(nc, 0) > nc_base)
         if groups_at_max >= nc_rem: return -float('inf')
+        
     if nc_count < nc_base: score += 1000000 
     elif nc_count == nc_base: score += 50 
+    
     return score
 
 # ==========================================
@@ -235,7 +264,7 @@ class TeamBuilder:
         print()
         title_text = Text("🦄 GIST 새내기배움터 조 자동 배정 프로그램 🚀", style="bold white", justify="center")
         subtitle_text = Text("\nFairness • Balance • Optimization", style="dim white", justify="center")
-        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 2 . 15 ]", style="bold bright_green", justify="center")
+        dept_text = Text("\n[ 지스트 문화행사위원회 ] [ v 26 . 2 . 21 ]", style="bold bright_green", justify="center")
         header_content = Text.assemble(title_text, subtitle_text, dept_text, justify="center")
         console.print(Panel(header_content, box=box.DOUBLE, border_style="bright_green", padding=(1, 4), style="on black"))
         print("\n")
@@ -438,7 +467,6 @@ class TeamBuilder:
                 is_valid_id = False
                 if clean_id and len(clean_id) == 13: is_valid_id = validate_id_checksum(clean_id)
                 
-                # [NEW] ID issue flag logic
                 is_id_problem = False
                 if is_minor:
                     if is_valid_id:
@@ -459,7 +487,7 @@ class TeamBuilder:
                     'birth_year': birth_year, 'gender': gender, 'major': clean_major,
                     'new_cam': new_cam_val, 'highschool': final_highschool, 
                     'phone': row[col_map['phone']], 'raw_birth': raw_birth, 'clean_id': clean_id,
-                    'is_id_problem': is_id_problem # [NEW] flag added
+                    'is_id_problem': is_id_problem
                 }
                 processed_members.append(info)
             
@@ -522,7 +550,7 @@ class TeamBuilder:
             new_cam_bases[nc] = count // self.num_groups  
             new_cam_rems[nc] = count % self.num_groups    
         
-        max_retries = 50000
+        max_retries = 50000 
         success = False
         
         with console.status("[bold green]성비와 인원을 완벽하게 맞추는 중... (엄격한 균등 분배)[/bold green]", spinner="bouncingBar") as status:
@@ -553,7 +581,7 @@ class TeamBuilder:
                         
                         for g_id in candidates:
                             score = calculate_score(g_id, member, group_status, 
-                                                 {'leader_years': self.leaders, 'new_cam_bases': new_cam_bases, 'new_cam_rems': new_cam_rems}, 
+                                                 {'leader_years': self.leaders, 'leader_names': self.leader_names, 'new_cam_bases': new_cam_bases, 'new_cam_rems': new_cam_rems}, 
                                                  self.weights, ignore_age=ignore_age, 
                                                  limits_config={'total': self.total_limits[g_id], 'male': self.male_limits[g_id], 'female': self.female_limits[g_id]})
                             if score > best_score:
@@ -630,7 +658,7 @@ class TeamBuilder:
     def save_result(self):
         print()
         time.sleep(0.5) 
-        console.print("\n[bold]💾 결과 엑셀 파일 생성 중...[/bold]")
+        console.print("\n[bold]💾 결과 엑셀 생성 중...[/bold]")
         
         valid_indices = [m['original_idx'] for m in self.members]
         final_df = self.df_members.loc[valid_indices].copy()
@@ -686,13 +714,12 @@ class TeamBuilder:
         fill_leader_green = PatternFill(start_color="92D050", end_color="92D050", fill_type="solid")
         fill_gray = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
         fill_light_gray = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-        fill_red = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid") # [NEW]
+        fill_red = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
         
         border_thin = Border(left=Side(style='thin'), right=Side(style='thin'), 
                              top=Side(style='thin'), bottom=Side(style='thin'))
         align_center = Alignment(horizontal='center', vertical='center')
 
-        # [NEW] ID Problem Map
         id_problem_map = {m['original_idx']: m.get('is_id_problem', False) for m in self.members}
 
         # -----------------------------------------------------------
@@ -730,11 +757,9 @@ class TeamBuilder:
                     cell.fill = fill_this_group
                     cell.font = font_bold
                 
-                # [NEW] Highschool '미기재' -> Gray
                 if col_key == "출신고교명" and str(val).strip() == "미기재":
                     cell.fill = fill_gray
                 
-                # [NEW] ID Problem -> Red
                 if col_key == id_col and id_problem_map.get(row.name, False):
                     cell.fill = fill_red
 
