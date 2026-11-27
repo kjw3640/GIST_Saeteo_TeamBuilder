@@ -1,0 +1,7 @@
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-2A1q8lgZjOdRL24MmC+2VN41lo49sZF4tZHj+z1t1tQ='; style-src 'sha256-yXQj5Zthq1BxDkpReBDrZ7uEu6HWzSTr87aHAsoRdQQ='; img-src data:; worker-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Cache-Control: no-store
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

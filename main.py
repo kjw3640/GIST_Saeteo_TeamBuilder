@@ -1,5 +1,3 @@
-import sys
-import subprocess
 import os
 import time
 import random
@@ -8,19 +6,8 @@ import unicodedata
 from datetime import datetime
 
 # ==========================================
-# 0. 라이브러리 자동 설치 및 임포트
+# 0. 라이브러리 임포트
 # ==========================================
-def install_and_import(package):
-    try:
-        __import__(package)
-    except ImportError:
-        print(f"📦 '{package}' 라이브러리가 없습니다. 자동으로 설치합니다...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-required_packages = ['pandas', 'openpyxl', 'rich']
-for package in required_packages:
-    install_and_import(package)
-
 import pandas as pd
 import numpy as np
 from rich.console import Console
@@ -181,7 +168,7 @@ def split_school_and_name(raw_text):
     return None, text
 
 # [UPGRADE] 절대 균등 분배 + 동명이인(조장 포함) 인접 조 회피 로직 추가
-def calculate_score(group_id, member, group_status, constraints, weights, ignore_age=False, limits_config=None):
+def calculate_score(group_id, member, group_status, constraints, weights, limits_config=None):
     leader_min_year = constraints['leader_years'].get(group_id, 0)
     
     if limits_config:
@@ -191,7 +178,7 @@ def calculate_score(group_id, member, group_status, constraints, weights, ignore
         if my_gender == '남' and current_gender_cnt >= limits_config['male']: return -float('inf')
         elif my_gender == '여' and current_gender_cnt >= limits_config['female']: return -float('inf')
         
-    if not ignore_age and leader_min_year > 0 and member['birth_year'] < leader_min_year:
+    if leader_min_year > max(member['birth_year'], constraints['oldest_leader_year']):
         return -float('inf')
         
     # 1. 같은 조 새내기 간 동명이인 회피 (절대 금지)
@@ -242,6 +229,20 @@ def calculate_score(group_id, member, group_status, constraints, weights, ignore
 # ==========================================
 # 2. 메인 로직 클래스
 # ==========================================
+
+def balanced_slots(male, female, groups):
+    order = list(range(groups))
+    random.shuffle(order)
+    male_base, male_extra = divmod(male, groups)
+    female_base, female_extra = divmod(female, groups)
+    male_slots = [male_base] * groups
+    female_slots = [female_base] * groups
+    for i in order[:male_extra]:
+        male_slots[i] += 1
+    for i in order[groups - female_extra:]:
+        female_slots[i] += 1
+    return male_slots, female_slots
+
 
 class TeamBuilder:
     def __init__(self):
@@ -328,6 +329,8 @@ class TeamBuilder:
                             y1, y2 = smart_get_year(row.iloc[2]), smart_get_year(row.iloc[4])
                         else:
                             y1, y2 = smart_get_year(row[year_cols[0]]), smart_get_year(row[year_cols[1]])
+                        if g_id < 1 or g_id in self.leaders or min(y1, y2) < 1900:
+                            raise ValueError("조 번호와 조장 생년을 확인하세요.")
                         self.leaders[g_id] = min(y1, y2)
 
                         if use_indices:
@@ -341,8 +344,13 @@ class TeamBuilder:
                             else:
                                 name1, name2 = "", ""
                         self.leader_names[g_id] = [name1, name2]
-                    except: continue
+                    except (ValueError, TypeError, IndexError, KeyError):
+                        if row.isna().all():
+                            continue
+                        raise ValueError(f"조장 명단 {idx + 2}행의 조 번호와 조장 정보를 확인하세요.") from None
                 
+                if not self.leaders or set(self.leaders) != set(range(1, max_group_id + 1)):
+                    raise ValueError("조 번호를 1부터 연속으로 입력하세요.")
                 self.num_groups = max_group_id
             
         except Exception as e:
@@ -531,13 +539,11 @@ class TeamBuilder:
         total_m = sum(1 for m in self.members if m['gender'] == '남')
         total_f = sum(1 for m in self.members if m['gender'] == '여')
         
-        base_m = total_m // self.num_groups
-        rem_m = total_m % self.num_groups
-        male_slots = [base_m + 1] * rem_m + [base_m] * (self.num_groups - rem_m)
-        
-        base_f = total_f // self.num_groups
-        rem_f = total_f % self.num_groups
-        female_slots = [base_f + 1] * rem_f + [base_f] * (self.num_groups - rem_f)
+        if not self.members or total_m + total_f != len(self.members):
+            console.print("[error]배정할 인원과 명단의 성별 항목을 확인하세요.[/error]")
+            return False
+        self.result_groups = {}
+        oldest_leader_year = min(self.leaders.values())
 
         new_cam_counts = {}
         for m in self.members:
@@ -550,15 +556,15 @@ class TeamBuilder:
             new_cam_bases[nc] = count // self.num_groups  
             new_cam_rems[nc] = count % self.num_groups    
         
+        deadline = time.monotonic() + 30
         max_retries = 50000 
         success = False
         
         with console.status("[bold green]성비와 인원을 완벽하게 맞추는 중... (엄격한 균등 분배)[/bold green]", spinner="bouncingBar") as status:
             for attempt in range(1, max_retries + 1):
-                random.shuffle(male_slots)
-                random.shuffle(female_slots)
-                temp_totals = [m + f for m, f in zip(male_slots, female_slots)]
-                if max(temp_totals) - min(temp_totals) > 1: continue 
+                if time.monotonic() >= deadline:
+                    break
+                male_slots, female_slots = balanced_slots(total_m, total_f, self.num_groups)
 
                 self.male_limits = {i: c for i, c in zip(range(1, self.num_groups + 1), male_slots)}
                 self.female_limits = {i: c for i, c in zip(range(1, self.num_groups + 1), female_slots)}
@@ -571,7 +577,7 @@ class TeamBuilder:
                 assignments = {m['original_idx']: None for m in self.members}
                 sorted_members = sorted(self.members, key=lambda x: x['birth_year'])
 
-                def try_assign(member_list, ignore_age=False):
+                def try_assign(member_list):
                     failed = []
                     for member in member_list:
                         best_group = -1
@@ -581,8 +587,8 @@ class TeamBuilder:
                         
                         for g_id in candidates:
                             score = calculate_score(g_id, member, group_status, 
-                                                 {'leader_years': self.leaders, 'leader_names': self.leader_names, 'new_cam_bases': new_cam_bases, 'new_cam_rems': new_cam_rems}, 
-                                                 self.weights, ignore_age=ignore_age, 
+                                                 {'oldest_leader_year': oldest_leader_year, 'leader_years': self.leaders, 'leader_names': self.leader_names, 'new_cam_bases': new_cam_bases, 'new_cam_rems': new_cam_rems}, 
+                                                 self.weights, 
                                                  limits_config={'total': self.total_limits[g_id], 'male': self.male_limits[g_id], 'female': self.female_limits[g_id]})
                             if score > best_score:
                                 best_score = score
@@ -594,10 +600,7 @@ class TeamBuilder:
                         else: failed.append(member)
                     return failed
 
-                unassigned = try_assign(sorted_members, ignore_age=False)
-                if unassigned: unassigned = try_assign(unassigned, ignore_age=False)
-                if unassigned: unassigned = try_assign(unassigned, ignore_age=True)
-                if unassigned: unassigned = try_assign(unassigned, ignore_age=True)
+                unassigned = try_assign(sorted_members)
 
                 if not unassigned:
                     success = True
@@ -608,9 +611,12 @@ class TeamBuilder:
         if success:
             console.print(f"\n[success]✨ 배정 성공! (총 시도: {attempt}회)[/success]")
             self._print_stats(group_status)
+            return True
         else:
-            console.print(f"\n[error]❌ [치명적 오류] {max_retries}번을 시도했으나 배정에 실패했습니다.[/error]")
+            console.print(f"\n[error]❌ [치명적 오류] {attempt}번의 시도 후 배정에 실패했습니다.[/error]")
             console.print("이유: 하드 조건(성비, 신캠조 엄격 분배, 동명이인)을 모두 만족하는 조합을 찾지 못했습니다.")
+
+            return False
 
     def _update_status(self, status, g_id, member):
         st = status[g_id]
@@ -888,6 +894,11 @@ class TeamBuilder:
                 ws.row_dimensions[r].height = 20
 
         filename = f"team_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        for sheet in wb.worksheets:
+            for row in sheet.iter_rows():
+                for cell in row:
+                    if cell.data_type == "f":
+                        cell.data_type = "s"
         wb.save(filename)
         
         console.print(f"[success]✔ 모든 작업이 완료되었습니다![/success]")
@@ -897,5 +908,5 @@ if __name__ == "__main__":
     builder = TeamBuilder()
     if builder.agree_to_terms():
         if builder.load_data():
-            builder.assign_teams()
-            builder.save_result()
+            if builder.assign_teams():
+                builder.save_result()

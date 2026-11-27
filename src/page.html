@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko" translate="no"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="__POLICY__"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>새터 조 편성 | GIST 문화행사위원회</title><link rel="icon" href="data:,"><style>__STYLE__</style></head>
+<body><header><div class="bar"><strong class="wordmark">GIST</strong><span class="brand">문화행사위원회</span><button type="button" class="reset" id="reset">작업 초기화</button></div></header>
+<main><section class="hero"><h1>새내기배움터 조 편성</h1><p class="intro">명단 확인부터 조별 연락망 작성까지</p></section>
+<ol class="steps" aria-label="작업 단계"><li aria-current="step">명단 선택</li><li>입력 확인</li><li>편성 결과</li></ol>
+<div class="layout"><section class="panel" aria-label="조 편성 작업"><div id="setup"><div class="heading"><h2>명단 선택</h2><label class="year">행사 연도 <input id="year" type="number" min="2000" max="2100" required autocomplete="off"></label></div>
+<p class="hint">구글 폼 응답을 내려받은 엑셀 그대로 선택하세요. 첫 번째 시트를 읽습니다.</p>
+<fieldset class="modes"><legend>조장 명단 입력 방식</legend><label><input name="mode" type="radio" value="file" checked> 엑셀 선택</label><label><input name="mode" type="radio" value="manual"> 직접 입력</label></fieldset><div id="manual" hidden><div class="scroll"><table><caption>조장 명단 직접 입력</caption><thead><tr><th>조 번호</th><th>조장1 이름</th><th>조장1 생년</th><th>조장2 이름</th><th>조장2 생년</th><th>행 삭제</th></tr></thead><tbody id="manualRows"></tbody></table></div><button id="add" class="secondary">조 추가</button></div><div class="filegrid"><label class="pick" id="leaderPick"><b>조장 명단</b><span>조 번호 · 조장 이름 · 생년</span><input id="leaders" type="file" accept=".xlsx" aria-label="조장 명단 파일 선택"><strong id="leaderLabel">파일 찾기</strong></label>
+<label class="pick"><b>새내기 명단</b><span>이름·학교 분리형 또는 합본형</span><input id="people" type="file" accept=".xlsx" aria-label="새내기 명단 파일 선택"><strong id="peopleLabel">파일 찾기</strong></label></div>
+<p class="small">.xlsx 형식 · 파일당 8 MB 이하</p><div class="action"><button id="read" disabled>입력 내용 확인</button></div></div>
+<div id="review" hidden><h2>입력 확인</h2><p id="counts"></p><div id="alerts"></div><div id="edits"></div><div class="action"><button id="back" class="secondary">파일 다시 선택</button><button id="run">조 편성하기</button></div></div>
+<div id="result" hidden><h2>편성 결과</h2><p id="summary"></p><div id="stats" class="scroll"></div><div class="downloads"><h3>결과 엑셀</h3><label for="scope">다운로드할 명단</label><select id="scope"></select><p id="exportHint" class="hint"></p><button id="download">엑셀 다운로드</button></div><button id="again" class="secondary">입력 확인으로 돌아가기</button></div>
+<p id="status" role="status" aria-live="polite"></p></section>
+<aside><div class="privacy"><h2>이 기기에서만 처리</h2><p>명단을 서버로 보내거나 브라우저에 자동 저장하지 않습니다. 초기화하면 현재 작업을 비웁니다.</p><hr><p class="small">내려받은 운영진용 파일에는 주민등록번호가 포함됩니다.</p></div>
+<details><summary>조 편성 기준</summary><p>총원, 성별 인원, 각 신캠 조 인원은 조별로 최대 1명 차이가 나도록 배정합니다. 성이 달라도 이름이 같으면 같은 조에 배정하지 않으며 조장 이름도 확인합니다.</p><p>학과·생년을 분산하고 인접 조의 같은 이름을 피하도록 시도합니다. 모든 조장보다 나이가 많은 참가자는 최고령 조장이 있는 조에 배정합니다.</p></details><details class="offline"><summary>오프라인으로 사용하기</summary><p>웹 화면은 HTML 파일 하나를 받아 브라우저로 열면 됩니다. 터미널판은 압축을 풀고 사용법을 확인하세요.</p><a id="offlineLink" href="./index.html" download="GIST-새터-조편성.html">오프라인 화면 받기 (.html)</a><a id="cliLink" href="./saeteo-cli.zip" download>터미널판 받기 (.zip)</a></details></aside></div></main>
+<footer>GIST 문화행사위원회 · 새내기배움터</footer><script>__SCRIPT__</script></body></html>

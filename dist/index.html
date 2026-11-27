@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="ko" translate="no"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-2A1q8lgZjOdRL24MmC+2VN41lo49sZF4tZHj+z1t1tQ='; style-src 'sha256-yXQj5Zthq1BxDkpReBDrZ7uEu6HWzSTr87aHAsoRdQQ='; img-src data:; worker-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>새터 조 편성 | GIST 문화행사위원회</title><link rel="icon" href="data:,"><style>:root{color-scheme:light;--ink:#132e26;--green:#185840;--line:#cfdad3;--muted:#465e52;--mint:#e5f1e7;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:#f5f7f3}*{box-sizing:border-box}body{margin:0}header{border-bottom:1px solid var(--line);background:#fff}.bar,main,footer{width:min(1100px,calc(100% - 48px));margin:auto}.bar{height:68px;display:flex;align-items:center;gap:16px}.wordmark{font-family:Arial,sans-serif;font-size:27px;font-weight:900;font-style:italic;letter-spacing:-2px;color:#164d39}.brand{border-left:1px solid var(--line);padding-left:16px;font-size:15px;font-weight:650}.reset{margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--muted);font-size:14px;padding:8px 14px}.hero{margin:30px 0 24px;border-radius:20px;background:#174a39;color:white;padding:32px 40px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:24px}.intro{color:#e2eee6;margin:12px 0 0;font-size:17px}h1,h2,h3,p{overflow-wrap:anywhere}h1{font-size:clamp(34px,4.5vw,54px);line-height:1.1;letter-spacing:-.065em;margin:0}h2{font-size:24px;letter-spacing:-.05em;margin:0}h3{font-size:18px;margin:0 0 12px}.steps{list-style:none;display:flex;gap:0;border-bottom:1px solid var(--line);padding:0;margin:0 0 22px;counter-reset:stage}.steps li{padding:8px 20px 13px;color:var(--muted);font-size:15px;counter-increment:stage}.steps li::before{content:counter(stage);margin-right:8px;font-size:13px;font-variant-numeric:tabular-nums}.steps [aria-current]{color:var(--green);font-weight:750;border-bottom:3px solid var(--green)}.layout{display:grid;grid-template-columns:minmax(0,2.5fr) minmax(220px,1fr);gap:20px;align-items:start}.panel,aside>div,details{border:1px solid var(--line);border-radius:16px;background:white;padding:26px}.heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.year{color:var(--muted);font-size:14px}.year input{width:82px;margin-left:4px}input,select{font:inherit;color:var(--ink);border:1px solid #aebeb2;border-radius:8px;padding:8px;background:white}.hint,.small,aside p{color:var(--muted);line-height:1.65}.hint{margin:10px 0 20px}.small{font-size:14px}.filegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pick{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:18px;border:1px dashed #92af9c;border-radius:12px;background:#f8fbf8;cursor:pointer;position:relative;overflow:hidden}.pick:hover,.pick:focus-within{background:var(--mint);outline:2px solid var(--green)}.pick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.pick b{font-size:19px}.pick span:not(.fileicon){font-size:14px;color:var(--muted)}.pick strong{margin-top:9px;padding:6px 12px;background:white;border:1px solid var(--line);border-radius:7px;font-size:14px;max-width:100%;overflow-wrap:anywhere}.action{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;flex-wrap:wrap}button{font:inherit;font-weight:650;background:var(--green);border:1px solid var(--green);color:white;border-radius:9px;padding:11px 17px;cursor:pointer}button:hover:enabled{filter:brightness(.92)}button:disabled{cursor:default;background:#e1e8e3;border-color:#e1e8e3;color:#56695c}.secondary{border:1px solid var(--line);background:white;color:var(--green)}:focus-visible{outline:3px solid #b37c28;outline-offset:2px}.privacy{background:var(--mint)}.privacy h2{font-size:19px;margin-top:13px}.privacy p{margin-bottom:0}hr{border:0;border-top:1px solid #c2d6c5;margin:16px 0}details{margin-top:12px;padding:16px}summary{cursor:pointer;font-weight:bold}aside p{font-size:15px}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:15px}th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;white-space:nowrap}th{background:#edf3ed}.downloads{background:#f3f7f2;border-radius:12px;padding:18px;margin:18px 0}.downloads label{font-size:14px;display:block;margin-bottom:6px}.downloads select{width:100%}.warning{background:#fff4dc;padding:12px;border-radius:8px}.edit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}.edit input{width:135px}.edit label{font-size:14px;display:grid;gap:4px}#status{color:var(--green);margin:16px 0 0;line-height:1.6}#status:empty{display:none}#status.error{color:#943419}footer{margin:30px auto;padding:18px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px}[hidden]{display:none!important}@media(max-width:750px){.bar,main,footer{width:calc(100% - 28px)}.layout{grid-template-columns:1fr}.hero{padding:26px 22px;margin-top:18px}.panel{padding:18px}.steps li{padding:8px 10px;font-size:14px}.filegrid{gap:8px}.pick{padding:12px}.intro{font-size:15px}}@media(max-width:430px){.brand{font-size:13px}.year input{width:69px}.pick span:not(.fileicon){font-size:13px}.steps li{padding:8px}.action button{flex-grow:1}}
+.modes{padding:0;border:none;display:flex;gap:18px;margin:16px 0}.modes legend{font-size:14px;color:var(--muted);margin-bottom:7px}.modes input{accent-color:var(--green)}#manual{margin-bottom:16px}caption{text-align:left;font-weight:650;margin-bottom:6px}#manual input{width:68px;min-width:0}#manual th,#manual td{padding:5px}#manual button{padding:6px 10px;font-size:14px}#add{margin-top:8px}.confirm{display:block;margin:16px 0}.confirm input{accent-color:var(--green)}.roster{max-height:290px;overflow:auto}
+.offline a{display:block;color:var(--green);text-underline-offset:4px;line-height:1.9;font-weight:650}.offline summary{margin-bottom:4px}
+:root{--ink:#202822;--muted:#566158;--line:#d7ddd6;--green:#23563d;background:#fafbf8}.bar,main,footer{width:min(1064px,calc(100% - 56px))}.bar{height:62px}.wordmark{color:#223e2e}.hero{display:block;background:none;color:var(--ink);margin:34px 0 22px;padding:0;border-radius:0}.intro{font-size:16px;color:var(--muted);margin-top:10px}.hero h1{font-size:clamp(30px,3.7vw,44px);letter-spacing:-.065em}.steps{margin-bottom:24px}.steps li:first-child{padding-left:0}.layout{grid-template-columns:minmax(0,2.55fr) minmax(220px,1fr);gap:30px}.panel{padding:26px 28px;border-radius:7px}.hint{font-size:15px}.modes{margin:24px 0 14px}.modes label{cursor:pointer}.filegrid{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}.pick{display:grid;grid-template-columns:minmax(135px,auto) minmax(86px,1fr);column-gap:16px;row-gap:3px;border:0;border-bottom:1px solid var(--line);background:transparent;border-radius:0;padding:17px 2px}.pick b{grid-column:1;font-size:17px}.pick span{grid-column:1}.pick strong{grid-column:2;grid-row:1 / span 2;justify-self:end;align-self:center;margin:0;background:#f5f7f3;border-radius:5px}.pick.selected strong{color:var(--green);background:#ecf4ec}.pick:hover,.pick:focus-within{background:#f5f8f3}.privacy{border:0;border-top:3px solid #44614a;background:#edf2eb;border-radius:0;padding:18px}.privacy h2{font-size:17px}.privacy h2:first-child{margin:0}.privacy p{margin-top:10px}aside details{border:0;border-bottom:1px solid var(--line);border-radius:0;padding:16px 2px;margin:0;background:transparent}.reset,.secondary,button,input,select{border-radius:5px}.action{margin-top:24px}.pick input{z-index:1}.downloads{border-radius:5px}.modes input{margin-right:3px}button:focus-visible,a:focus-visible{outline:3px solid #a56a1f;outline-offset:3px}
+@media(max-width:750px){.bar,main,footer{width:calc(100% - 32px)}.layout{grid-template-columns:1fr;gap:18px}.hero{margin:24px 0 16px}.panel{padding:19px}.pick{grid-template-columns:minmax(115px,auto) minmax(74px,1fr)}.pick strong{padding:7px 9px}.modes{margin:18px 0 12px}#manual table,#manual tbody{display:block}#manual thead{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}#manual tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border-top:1px solid var(--line);padding:12px 0}#manual td{display:block;border:none;padding:0}#manual td::before{content:attr(data-label);display:block;font-size:13px;color:var(--muted);margin-bottom:3px}#manual td:first-child{grid-column:1/-1}#manual td:last-child{align-self:end}#manual input{width:100%}#manual td:first-child input{width:65px}}
+</style></head>
+<body><header><div class="bar"><strong class="wordmark">GIST</strong><span class="brand">문화행사위원회</span><button type="button" class="reset" id="reset">작업 초기화</button></div></header>
+<main><section class="hero"><h1>새내기배움터 조 편성</h1><p class="intro">명단 확인부터 조별 연락망 작성까지</p></section>
+<ol class="steps" aria-label="작업 단계"><li aria-current="step">명단 선택</li><li>입력 확인</li><li>편성 결과</li></ol>
+<div class="layout"><section class="panel" aria-label="조 편성 작업"><div id="setup"><div class="heading"><h2>명단 선택</h2><label class="year">행사 연도 <input id="year" type="number" min="2000" max="2100" required autocomplete="off"></label></div>
+<p class="hint">구글 폼 응답을 내려받은 엑셀 그대로 선택하세요. 첫 번째 시트를 읽습니다.</p>
+<fieldset class="modes"><legend>조장 명단 입력 방식</legend><label><input name="mode" type="radio" value="file" checked> 엑셀 선택</label><label><input name="mode" type="radio" value="manual"> 직접 입력</label></fieldset><div id="manual" hidden><div class="scroll"><table><caption>조장 명단 직접 입력</caption><thead><tr><th>조 번호</th><th>조장1 이름</th><th>조장1 생년</th><th>조장2 이름</th><th>조장2 생년</th><th>행 삭제</th></tr></thead><tbody id="manualRows"></tbody></table></div><button id="add" class="secondary">조 추가</button></div><div class="filegrid"><label class="pick" id="leaderPick"><b>조장 명단</b><span>조 번호 · 조장 이름 · 생년</span><input id="leaders" type="file" accept=".xlsx" aria-label="조장 명단 파일 선택"><strong id="leaderLabel">파일 찾기</strong></label>
+<label class="pick"><b>새내기 명단</b><span>이름·학교 분리형 또는 합본형</span><input id="people" type="file" accept=".xlsx" aria-label="새내기 명단 파일 선택"><strong id="peopleLabel">파일 찾기</strong></label></div>
+<p class="small">.xlsx 형식 · 파일당 8 MB 이하</p><div class="action"><button id="read" disabled>입력 내용 확인</button></div></div>
+<div id="review" hidden><h2>입력 확인</h2><p id="counts"></p><div id="alerts"></div><div id="edits"></div><div class="action"><button id="back" class="secondary">파일 다시 선택</button><button id="run">조 편성하기</button></div></div>
+<div id="result" hidden><h2>편성 결과</h2><p id="summary"></p><div id="stats" class="scroll"></div><div class="downloads"><h3>결과 엑셀</h3><label for="scope">다운로드할 명단</label><select id="scope"></select><p id="exportHint" class="hint"></p><button id="download">엑셀 다운로드</button></div><button id="again" class="secondary">입력 확인으로 돌아가기</button></div>
+<p id="status" role="status" aria-live="polite"></p></section>
+<aside><div class="privacy"><h2>이 기기에서만 처리</h2><p>명단을 서버로 보내거나 브라우저에 자동 저장하지 않습니다. 초기화하면 현재 작업을 비웁니다.</p><hr><p class="small">내려받은 운영진용 파일에는 주민등록번호가 포함됩니다.</p></div>
+<details><summary>조 편성 기준</summary><p>총원, 성별 인원, 각 신캠 조 인원은 조별로 최대 1명 차이가 나도록 배정합니다. 성이 달라도 이름이 같으면 같은 조에 배정하지 않으며 조장 이름도 확인합니다.</p><p>학과·생년을 분산하고 인접 조의 같은 이름을 피하도록 시도합니다. 모든 조장보다 나이가 많은 참가자는 최고령 조장이 있는 조에 배정합니다.</p></details><details class="offline"><summary>오프라인으로 사용하기</summary><p>웹 화면은 HTML 파일 하나를 받아 브라우저로 열면 됩니다. 터미널판은 압축을 풀고 사용법을 확인하세요.</p><a id="offlineLink" href="./index.html" download="GIST-새터-조편성.html">오프라인 화면 받기 (.html)</a><a id="cliLink" href="./saeteo-cli.zip" download>터미널판 받기 (.zip)</a></details></aside></div></main>
+<footer>GIST 문화행사위원회 · 새내기배움터</footer><script>// Read only the first worksheet, shared strings, and workbook metadata.
+// Never visit relationship URLs or evaluate formulas from a workbook.
+const UTF8 = new TextDecoder("utf-8", {fatal:true});
+const enc = new TextEncoder();
+const MB = 1024 * 1024;
+const sheetNS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+const relNS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+function fail(message) { throw new Error(message); }
+function descendants(root, tag) { return Array.from(root.getElementsByTagNameNS("*", tag)); }
+function columnIndex(letters) {
+  let n = 0;
+  for (const c of letters) n = n * 26 + c.charCodeAt(0) - 64;
+  return n - 1;
+}
+function zipDirectory(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const u16 = i => view.getUint16(i,true), u32 = i => view.getUint32(i,true);
+  const bad = () => fail("표준 .xlsx 통합 문서를 선택하세요. 암호화되거나 손상된 파일은 읽을 수 없습니다.");
+  let end = bytes.length - 22;
+  while (end >= Math.max(0, bytes.length-65557) && (u32(end)!==0x06054b50 || end+22+u16(end+20)!==bytes.length)) end--;
+  if (end < 0 || u32(end)!==0x06054b50 || u16(end+4) || u16(end+6)) bad();
+  const count = u16(end+10), entries = new Map();
+  if (count > 2048) fail("파일 안의 항목이 너무 많습니다.");
+  let at = u32(end+16);
+  for (let i=0;i<count;i++) {
+    if (at+46>end || u32(at)!==0x02014b50) bad();
+    const flags=u16(at+8), method=u16(at+10), packed=u32(at+20), size=u32(at+24);
+    const nameLen=u16(at+28), next=at+46+nameLen+u16(at+30)+u16(at+32);
+    if (next>end || flags&1) bad();
+    const name=UTF8.decode(bytes.subarray(at+46,at+46+nameLen)), local=u32(at+42);
+    if (local+30>end || u32(local)!==0x04034b50 || entries.has(name)) bad();
+    const offset=local+30+u16(local+26)+u16(local+28);
+    if (offset+packed>end) bad();
+    entries.set(name,{offset,packed,size,method});
+    at=next;
+  }
+  let budget=24*MB;
+  return async path => {
+    const e=entries.get(path);
+    if (!e) return null;
+    if (e.size>budget || e.size>12*MB || ![0,8].includes(e.method)) fail("파일 압축 형식 또는 크기 제한을 확인하세요.");
+    const data=bytes.subarray(e.offset,e.offset+e.packed);
+    let stream=new Blob([data]).stream();
+    if (e.method===8) stream=stream.pipeThrough(new DecompressionStream("deflate-raw"));
+    const reader=stream.getReader(), parts=[];
+    let used=0;
+    while(true) {
+      const {done,value}=await reader.read();
+      if(done) break;
+      used+=value.length;
+      if(used>e.size || used>budget) { await reader.cancel(); fail("엑셀 압축 데이터 크기가 잘못되었습니다."); }
+      parts.push(value);
+    }
+    if(used!==e.size) bad();
+    budget-=used;
+    const xml=UTF8.decode(await new Blob(parts).arrayBuffer());
+    if (/<!DOCTYPE|<!ENTITY/i.test(xml)) fail("지원하지 않는 XML 선언이 있습니다.");
+    const doc=new DOMParser().parseFromString(xml,"application/xml");
+    if(descendants(doc,"parsererror").length) bad();
+    return doc;
+  };
+}
+async function readBook(file) {
+  if (!/\.xlsx$/i.test(file.name) || file.size>8*MB) fail("8 MB 이하의 .xlsx 파일을 선택하세요.");
+  const xml=zipDirectory(new Uint8Array(await file.arrayBuffer()));
+  const book=await xml("xl/workbook.xml"), rel=await xml("xl/_rels/workbook.xml.rels");
+  if(!book || !rel) fail("엑셀 통합 문서 정보를 찾을 수 없습니다.");
+  const first=descendants(book,"sheet")[0], key=first?.getAttributeNS(relNS,"id");
+  const rels=descendants(rel,"Relationship");
+  function part(r) {
+    const target=r?.getAttribute("Target") || "";
+    if (!target || r.getAttribute("TargetMode")==="External" || /[:\\?#]|(?:^|\/)\.\.(?:\/|$)/.test(target)) fail("지원하지 않는 엑셀 시트 연결입니다.");
+    return target.startsWith("/") ? target.slice(1) : "xl/"+target.replace(/^\.\//,"");
+  }
+  const sharedRel=rels.find(r=>r.getAttribute("Type")?.endsWith("/sharedStrings"));
+  const sharedDoc=sharedRel ? await xml(part(sharedRel)) : null;
+  const inlineText=el=>descendants(el,"t").map(t=>t.textContent).join("");
+  const strings=sharedDoc ? descendants(sharedDoc,"si").map(inlineText) : [];
+  const data=await xml(part(rels.find(r=>r.getAttribute("Id")===key)));
+  if(!data) fail("첫 번째 시트를 읽을 수 없습니다.");
+  const rows=[];
+  const sheetData=descendants(data,"sheetData")[0];
+  if(!sheetData) fail("빈 시트입니다.");
+  for(const row of sheetData.children) {
+    const cells=[];
+    for(const c of row.children) {
+      if(c.localName!=="c") continue;
+      const ref=/^([A-Z]{1,3})\d+$/.exec(c.getAttribute("r")||"");
+      if(!ref) continue;
+      const col=columnIndex(ref[1]);
+      if(col>=128) continue;
+      const type=c.getAttribute("t"), v=descendants(c,"v")[0]?.textContent||"";
+      const value=type==="inlineStr" ? inlineText(c) : type==="s" ? strings[Number(v)]||"" : v;
+      if(value.length>32767) fail("셀 내용이 너무 깁니다.");
+      if(value.trim()) cells[col]=value.trim();
+    }
+    if(cells.length) rows.push({number:Number(row.getAttribute("r")),cells});
+    if(rows.length>2501) fail("파일당 최대 2,500행까지 읽을 수 있습니다.");
+  }
+  if(rows.length<2) fail("첫 번째 시트에 열 제목과 명단을 넣어주세요.");
+  return rows;
+}
+
+// Export a fresh OOXML package containing only explicitly selected columns.
+// All cell values use inline strings, including text beginning with '='.
+const escapeXML=s=>String(s??"").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const crcTable=Array.from({length:256},(_,i)=>{let c=i; for(let j=0;j<8;j++) c=c&1?0xedb88320^(c>>>1):c>>>1; return c>>>0;});
+function zipStore(files) {
+  const chunks=[], central=[];
+  let offset=0, centralSize=0;
+  for(const [path,xml] of files) {
+    const name=enc.encode(path), data=enc.encode(xml);
+    let crc=0xffffffff; for(const b of data) crc=(crc>>>8)^crcTable[(crc^b)&255]; crc=(crc^0xffffffff)>>>0;
+    function header(dir) {
+      const base=dir?46:30, b=new Uint8Array(base+name.length), v=new DataView(b.buffer);
+      const w=(pos,n)=>v.setUint16(pos,n,true), d=(pos,n)=>v.setUint32(pos,n,true);
+      d(0,dir?0x02014b50:0x04034b50);
+      const diff=dir?2:0;
+      if(dir) { w(4,20); d(42,offset); }
+      w(4+diff,20); w(12+diff,33); d(14+diff,crc); d(18+diff,data.length); d(22+diff,data.length); w(26+diff,name.length);
+      b.set(name,base); return b;
+    }
+    const local=header(false), cd=header(true);
+    chunks.push(local,data);central.push(cd);centralSize+=cd.length;offset+=local.length+data.length;
+  }
+  const tail=new Uint8Array(22), v=new DataView(tail.buffer);
+  v.setUint32(0,0x06054b50,true); v.setUint16(8,files.length,true); v.setUint16(10,files.length,true);
+  v.setUint32(12,centralSize,true); v.setUint32(16,offset,true);
+  return new Blob([...chunks,...central,tail],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+function makeWorkbook(sheets) {
+  const pkg="http://schemas.openxmlformats.org/package/2006/relationships";
+  const mime="application/vnd.openxmlformats-officedocument.spreadsheetml.";
+  const relation=(id,kind,path)=>`<Relationship Id="r${id}" Type="${relNS}/${kind}" Target="${path}"/>`;
+  const parts=[], names=[], links=[], types=[];
+  sheets.forEach(({name,rows,widths,headingRows=[0]},i)=>{
+    const n=i+1, path="worksheets/sheet"+n+".xml";
+    names.push(`<sheet name="${escapeXML(name)}" sheetId="${n}" r:id="r${n}"/>`);
+    links.push(relation(n,"worksheet",path));
+    types.push(`<Override PartName="/xl/${path}" ContentType="${mime}worksheet+xml"/>`);
+    const cells=rows.map((row,r)=>`<row r="${r+1}" ht="21" customHeight="1">${row.map((v,c)=>`<c r="${String.fromCharCode(65+c)}${r+1}" t="inlineStr" s="${headingRows.includes(r)?1:0}"><is><t xml:space="preserve">${escapeXML(v)}</t></is></c>`).join("")}</row>`).join("");
+    parts.push(["xl/"+path,`<worksheet xmlns="${sheetNS}"><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="1" topLeftCell="A2" state="frozen"/></sheetView></sheetViews><cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${cells}</sheetData></worksheet>`]);
+  });
+  const styles=`<styleSheet xmlns="${sheetNS}"><fonts count="2"><font><sz val="11"/><name val="맑은 고딕"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="맑은 고딕"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF245A48"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf xfId="0"/><xf xfId="0" fontId="1" fillId="2" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  parts.push(["xl/styles.xml",styles],["xl/workbook.xml",`<workbook xmlns="${sheetNS}" xmlns:r="${relNS}"><sheets>${names.join("")}</sheets></workbook>`],["xl/_rels/workbook.xml.rels",`<Relationships xmlns="${pkg}">${links.join("")}${relation("style","styles","styles.xml")}</Relationships>`],["_rels/.rels",`<Relationships xmlns="${pkg}">${relation(1,"officeDocument","xl/workbook.xml")}</Relationships>`],["[Content_Types].xml",`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${mime}sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="${mime}styles+xml"/>${types.join("")}</Types>`]);
+  return zipStore(parts);
+}
+
+class InputIssue extends Error {}
+function issue(s){throw new InputIssue(s);}
+const nameKey=name=>Array.from(name.trim()).slice(name.trim().length>1?1:0).join("");
+const cleanSchool=s=>s.replace(/고등학교/g,"고").replace(/과고/g,"과학고").replace(/여자고/g,"여고").replace(/교원대학교부설고/g,"교대부고").replace(/대학교사범대학부설고/g,"사대부고");
+const cleanDigits=s=>s.replace(/\.0$/,"").replace(/[\s-]/g,"");
+function birthInfo(id){
+  const m=/^(\d{2})(\d{2})(\d{2})([1-8])\d{6}$/.exec(id);
+  if(!m) return null;
+  const year=Number(m[1])+("3478".includes(m[4])?2000:1900);
+  const date=new Date(Date.UTC(year,+m[2]-1,+m[3]));
+  return date.getUTCFullYear()===year && date.getUTCMonth()===+m[2]-1 && date.getUTCDate()===+m[3]?year:null;
+}
+function readLeaders(rows,eventYear) {
+  const [headers,...rest]=rows, h=headers.cells;
+  const names=[], years=[];
+  h.forEach((v,i)=>{if(/이름|성명/.test(v))names.push(i);if(/생년|year/i.test(v))years.push(i);});
+  const group=h.findIndex(v=>v&&/조/.test(v)&&/번호/.test(v));
+  const slots=group<0||names.length!==2||years.length!==2?[0,1,2,3,4]:[group,names[0],years[0],names[1],years[1]];
+  const ids=new Set(),leaders=[];
+  for(const {cells,number} of rest) {
+    const [g,a,y,b,z]=slots.map(i=>cells[i]||"");
+    if(!g&&!a&&!b&&!y&&!z) continue;
+    const id=Number(g.replace(/\s*조$/,""));
+    const parseYear=v=>/^\d{4}$/.test(v)?+v:birthInfo(cleanDigits(v))||(/^\d{4}[-/.]/.test(v)?Number(v.slice(0,4)):0);
+    const yrs=[parseYear(y),parseYear(z)];
+    if(!Number.isSafeInteger(id)||id<1||id>9999||ids.has(id)||!a||!b||yrs.some(v=>v<1900||v>eventYear))
+      issue("조장 명단 "+number+"행의 조 번호, 두 조장 이름과 네 자리 생년을 확인하세요.");
+    ids.add(id);leaders.push({id,names:[a,b],keys:[nameKey(a),nameKey(b)],year:Math.min(...yrs)});
+  }
+  if(!leaders.length||leaders.length>120)issue("조장 명단에는 1~120개 조가 필요합니다.");
+  return leaders.sort((a,b)=>a.id-b.id);
+}
+function readPeople(rows,eventYear) {
+  const [header,...rest]=rows;
+  function find(pattern,label,optional=false){
+    const cols=[];header.cells.forEach((v,i)=>{if(pattern.test(v)&&!/동의|보호자|비상연락/.test(v))cols.push(i);});
+    if(cols.length>1 || (!cols.length&&!optional))issue(label+" 열을 하나로 식별할 수 없습니다. 첫 행의 제목을 확인하세요.");
+    return cols[0];
+  }
+  const name=find(/이름|성명/,"이름"),school=header.cells.findIndex((v,i)=>i!==name&&v&&/고교|고등학교|출신고/.test(v));
+  const cam=find(/신캠|신입생\s*캠프/,"신캠 조"),major=find(/학과|학부/,"학과"),gender=find(/성별/,"성별");
+  const phone=find(/전화|휴대폰|휴대전화|연락처/,"전화번호"), idCol=find(/주민/,"주민등록번호");
+  const people=[],notices=[], phones=new Set(), ids=new Set();
+  for(const {cells,number} of [...rest].reverse()){
+    if(![name,cam,major,gender,phone,idCol].some(i=>cells[i]))continue;
+    const get=i=>(cells[i]||"").trim(), rawName=get(name);
+    const split=school>=0 ? null : rawName.match(/^(.+?(?:고등학교|학교|고))\s*[+,_/\-]?\s*([가-힣]{2,4})$/)||rawName.match(/^(.+?)[\s+,_/\-]+([가-힣]{2,4})$/);
+    const real=split?split[2]:rawName, hs=cleanSchool(get(school)||(split?split[1]:""));
+    let p=cleanDigits(get(phone)), id=cleanDigits(get(idCol));
+    if(/^1\d{9}$/.test(p)) p="0"+p;
+    if(/^\d{12}$/.test(id))id="0"+id;
+    if(!/^01\d{8,9}$/.test(p))issue("새내기 명단 "+number+"행의 휴대전화 번호를 확인하세요.");
+    const year=birthInfo(id);
+    if(!year||year>eventYear)issue("새내기 명단 "+number+"행의 주민등록번호 자릿수와 생년월일을 확인하세요.");
+    if(phones.has(p)||ids.has(id)){notices.push(number+"행 · 중복 제출로 제외 (아래쪽 응답 유지)");continue;}
+    phones.add(p);ids.add(id);
+    const checksum=(11-[2,3,4,5,6,7,8,9,2,3,4,5].reduce((a,w,i)=>a+w*Number(id[i]),0)%11)%10===Number(id[12]);
+    if(year>=eventYear-18&&checksum){notices.push(number+"행 · 기존 행사 연령 기준으로 제외");continue;}
+    if(!checksum)notices.push(number+"행 · "+(year>=eventYear-18?"연령 및 ":"")+"보험용 번호 원본 확인 필요 (명단에 포함)");
+    const rawSex=get(gender).replace(/[\s?\u200b\ufeff]/g,"").toLowerCase();
+    const sex=["남","남자","남성","m","male","man"].includes(rawSex)?"남":["여","여자","여성","f","female","woman"].includes(rawSex)?"여":"";
+    const camp=get(cam).replace(/\s*조$/,""),dept=get(major);
+    if(!real||!sex||!dept||!/^\d+$/.test(camp))issue("새내기 명단 "+number+"행의 이름·성별·학과·신캠 조를 확인하세요.");
+    people.push({row:number,name:real,school:hs,needsEdit:!hs||!/^([가-힣]{2,4})$/.test(real),major:dept.includes("도전탐색과정")?"도전탐색과정":dept,sex,camp:String(Number(camp)),year,phone:p.replace(/^(\d{3})(\d{3,4})(\d{4})$/,"$1-$2-$3"),id:id.slice(0,6)+"-"+id.slice(6)});
+  }
+  if(!people.length)issue("배정할 참가자가 없습니다. 행사 연도와 명단을 확인하세요.");
+  return {people:people.reverse(),notices:notices.reverse()};
+}
+
+// Worker receives only anonymous row ids and the attributes needed for allocation.
+function solve({leaders, people}, report=()=>{}) {
+  const n=leaders.length, male=people.filter(p=>p.sex==="남").length, female=people.length-male;
+  const oldest=Math.min(...leaders.map(g=>g.year)), names=new Map(), camps=new Map();
+  const bump=(map,key,d)=>map.set(key,(map.get(key)||0)+d);
+  const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  for(const p of people){bump(names,p.key,1);bump(camps,p.camp,1);}
+  const eligible=new Map();
+  for(const p of people) {
+    const ids=leaders.flatMap((g,i)=>!g.keys.includes(p.key) && g.year<=Math.max(p.year,oldest)?[i]:[]);
+    if(!ids.length) throw new Error(p.row+"행은 조장 이름과 나이 규칙을 만족하는 조가 없습니다.");
+    eligible.set(p.row,ids);
+  }
+  for(const [key,count] of names) {
+    if(count>leaders.filter(g=>!g.keys.includes(key)).length) throw new Error("같은 이름의 참가자 수가 배정 가능한 조 수를 초과합니다. 이름과 조장 명단을 확인하세요.");
+  }
+  const deadline=performance.now()+14000;
+  const leaderById=new Map(leaders.map((g,i)=>[g.id,i]));
+  const neighbors=leaders.map(g=>[leaderById.get(g.id-1),leaderById.get(g.id+1)].filter(i=>i!==undefined));
+  for(let attempt=1;performance.now()<deadline;attempt++) {
+    report(attempt);
+    const order=shuffle(leaders.map((_,i)=>i));
+    // Opposite ends give disjoint extras when possible, exactly the necessary overlap otherwise.
+    const limits=leaders.map(()=>({남:Math.floor(male/n),여:Math.floor(female/n)}));
+    for(let i=0;i<male%n;i++) limits[order[i]].남++;
+    for(let i=0;i<female%n;i++) limits[order[n-1-i]].여++;
+    const groups=leaders.map(()=>({list:new Set(),names:new Set(),sex:{남:0,여:0},camps:new Map(),majors:new Map(),years:new Map()}));
+    const extra=new Map();
+    function update(i,p,d) {
+      const g=groups[i], before=g.camps.get(p.camp)||0, floor=Math.floor(camps.get(p.camp)/n);
+      if(d>0){g.list.add(p);g.names.add(p.key);}else{g.list.delete(p);g.names.delete(p.key);}
+      g.sex[p.sex]+=d;bump(g.camps,p.camp,d);bump(g.majors,p.major,d);bump(g.years,p.year,d);
+      bump(extra,p.camp,Number(before+d>floor)-Number(before>floor));
+    }
+    function fits(i,p) {
+      const g=groups[i], size=g.camps.get(p.camp)||0, total=camps.get(p.camp);
+      return g.sex[p.sex]<limits[i][p.sex] && !g.names.has(p.key) &&
+        (size<Math.floor(total/n) || (size===Math.floor(total/n) && (extra.get(p.camp)||0)<total%n));
+    }
+    function score(i,p) {
+      const g=groups[i];
+      const adjacent=neighbors[i].filter(j=>groups[j].names.has(p.key)||leaders[j].keys.includes(p.key)).length;
+      return adjacent*240+(g.camps.get(p.camp)||0)*90+g.list.size*4+(g.majors.get(p.major)||0)*8+(g.years.get(p.year)||0)*5+Math.random()*12;
+    }
+    function place(p,depth,blocked,budget) {
+      if(--budget.left<0 || performance.now()>=deadline) return false;
+      const ids=eligible.get(p.row).filter(i=>!blocked.has(i));
+      let best=-1, bestCost=Infinity;
+      for(const i of ids) if(fits(i,p)){const cost=score(i,p);if(cost<bestCost){best=i;bestCost=cost;}}
+      if(best>=0){update(best,p,1);return true;}
+      if(depth===0) return false;
+      for(const i of shuffle(ids)) {
+        blocked.add(i);
+        for(const q of shuffle([...groups[i].list])) {
+          if(budget.left<=0 || performance.now()>=deadline) break;
+          update(i,q,-1);
+          if(fits(i,p)) {
+            update(i,p,1);
+            if(place(q,depth-1,blocked,budget)) return true;
+            update(i,p,-1);
+          }
+          update(i,q,1);
+        }
+        blocked.delete(i);
+      }
+      return false;
+    }
+    const sequence=shuffle([...people]).sort((a,b)=>eligible.get(a.row).length-eligible.get(b.row).length || names.get(b.key)-names.get(a.key));
+    if(sequence.every(p=>place(p,3,new Set(),{left:2000}))) {
+      const rows=groups.map(g=>[...g.list]);
+      const spread=xs=>Math.max(...xs)-Math.min(...xs);
+      const flat=rows.flat();
+      const ok=flat.length===people.length && new Set(flat.map(p=>p.row)).size===people.length &&
+        spread(rows.map(r=>r.length))<=1 &&
+        ["남","여"].every(s=>spread(rows.map(r=>r.filter(p=>p.sex===s).length))<=1) &&
+        [...camps.keys()].every(c=>spread(rows.map(r=>r.filter(p=>p.camp===c).length))<=1) &&
+        rows.every((r,i)=>new Set(r.map(p=>p.key)).size===r.length && r.every(p=>!leaders[i].keys.includes(p.key)&&leaders[i].year<=Math.max(oldest,p.year)));
+      if(!ok) throw new Error("배정 결과 검증에 실패했습니다.");
+      return rows.map(r=>r.map(p=>p.row));
+    }
+  }
+  throw new Error("시간 안에 조건을 만족하는 배정을 찾지 못했습니다. 다시 편성하거나 이름·조장 나이·신캠 조 분포를 확인하세요.");
+}
+
+"use strict";
+const $=id=>document.getElementById(id);
+const el=(tag,value)=>{const node=document.createElement(tag);if(value!==undefined)node.textContent=value;return node;};
+let state=null,worker=null,workerURL="",busy=false,version=0;
+const urls=new Set();
+function message(s,error=false){$("status").textContent=s;$("status").classList.toggle("error",error);}
+function stage(id){
+  ["setup","review","result"].forEach((s,i)=>{const current=s===id;$(s).hidden=!current;const li=document.querySelectorAll(".steps li")[i];if(current)li.setAttribute("aria-current","step");else li.removeAttribute("aria-current");});
+}
+function stopWorker(){worker?.terminate();worker=null;if(workerURL)URL.revokeObjectURL(workerURL);workerURL="";busy=false;}
+function manualMode(){return document.querySelector('input[name="mode"]:checked').value==="manual";}
+function ready(){
+  const manual=manualMode();
+  $("manual").hidden=!manual;$("leaderPick").hidden=manual;
+  for(const input of $("setup").querySelectorAll("input, #add, #manualRows button"))input.disabled=busy;
+  $("read").disabled=busy||!$("people").files.length || (manual?!$("manualRows").children.length:!$("leaders").files.length);
+}
+function addLeader(){
+  const body=$("manualRows");
+  if(body.children.length>=120)return;
+  const row=el("tr");
+  const used=Array.from(body.rows,r=>Number(r.cells[0].firstChild.value));
+  let id=1;while(used.includes(id))id++;
+  for(const [i,label] of ["조 번호","조장1 이름","조장1 생년","조장2 이름","조장2 생년"].entries()){
+    const td=el("td"),input=el("input");input.setAttribute("aria-label",label);
+    td.dataset.label=label;input.autocomplete="off";input.spellcheck=false;input.maxLength=40;
+    if([0,2,4].includes(i)){input.inputMode="numeric";input.maxLength=4;}
+    if(!i)input.value=id;
+    td.append(input);row.append(td);
+  }
+  const td=el("td"),del=el("button","삭제");del.type="button";del.className="secondary";del.onclick=()=>{row.remove();ready();};td.append(del);row.append(td);body.append(row);ready();
+}
+function manualData(){return [{number:1,cells:["조 번호","조장1 이름","조장1 생년","조장2 이름","조장2 생년"]},...Array.from($("manualRows").rows,(r,i)=>({number:i+2,cells:Array.from(r.querySelectorAll("input"),t=>t.value.trim())}))];}
+function clearResult(){for(const id of ["counts","alerts","edits","summary","stats","scope","exportHint"])$(id).replaceChildren();}
+function reset(){
+  version++;stopWorker();state=null;
+  for(const url of urls)URL.revokeObjectURL(url);urls.clear();
+  for(const pick of document.querySelectorAll(".pick"))pick.classList.remove("selected");
+  $("people").value="";$("leaders").value="";
+  $("leaderLabel").textContent=$("peopleLabel").textContent="파일 찾기";
+  document.querySelector('input[value="file"]').checked=true;
+  $("manualRows").replaceChildren();addLeader();
+  $("year").value=new Date().getFullYear();clearResult();stage("setup");ready();message("");
+}
+$("reset").onclick=()=>{reset();message("명단과 편성 결과를 비웠습니다.");};
+window.addEventListener("pagehide",reset);
+for(const radio of document.querySelectorAll('input[name="mode"]'))radio.onchange=ready;
+$("add").onclick=addLeader;
+for(const [id,label] of [["leaders","leaderLabel"],["people","peopleLabel"]]){
+  $(id).onchange=()=>{$(id).parentElement.classList.toggle("selected",!!$(id).files.length);$(label).textContent=$(id).files[0]?.name||"파일 찾기";message("");ready();};
+}
+function table(headers,rows) {
+  const t=el("table"),head=el("thead"),tr=el("tr");
+  for(const h of headers)tr.append(el("th",h));head.append(tr);t.append(head);
+  const body=el("tbody");for(const values of rows){const row=el("tr");for(const v of values)row.append(el("td",v));body.append(row);}t.append(body);return t;
+}
+function details(title){const d=el("details");d.append(el("summary",title));return d;}
+function review(){
+  const {people,leaders,notices}=state;
+  $("counts").textContent=leaders.length+"개 조 · 배정 대상 "+people.length+"명";
+  const alerts=$("alerts"),edits=$("edits");alerts.replaceChildren();edits.replaceChildren();
+  if(notices.length){const d=details("입력 확인 사항 "+notices.length+"건");const list=el("ul");for(const s of notices)list.append(el("li",s));d.append(list);alerts.append(d);}
+  const uncertain=people.filter(p=>p.needsEdit);
+  if(uncertain.length){
+    edits.append(el("p","학교·이름 확인이 필요한 "+uncertain.length+"개 행입니다. 학교를 모르면 비워둘 수 있습니다."));
+    for(const p of uncertain){const box=el("div");box.className="edit";box.append(el("b",p.row+"행"));
+      for(const [key,label] of [["name","이름"],["school","출신고교"]]){const l=el("label",label),inp=el("input");inp.autocomplete="off";inp.spellcheck=false;inp.value=p[key];inp.maxLength=100;inp.oninput=()=>{p[key]=inp.value.trim();};l.append(inp);box.append(l);}edits.append(box);}
+  }
+  const d=details("인식한 참가자 명단 보기");d.ontoggle=()=>{if(!d.open)return;d.querySelector(".roster")?.remove();const div=el("div");div.className="roster";div.append(table(["행","이름","출신고교","학과","신캠 조"],people.map(p=>[p.row,p.name,p.school||"미기재",p.major,p.camp])));d.append(div);};edits.append(d);
+  const confirm=el("label");confirm.className="confirm";const check=el("input");check.type="checkbox";check.id="confirmed";check.onchange=()=>{$("run").disabled=!check.checked||busy;};
+  confirm.append(check,document.createTextNode(" 행사 운영을 위해 명단과 제외·확인 사항을 검토했습니다."));edits.append(confirm);
+  $("run").disabled=true;$("back").disabled=false;stage("review");message("");
+}
+$("read").onclick=async()=>{
+  const year=Number($("year").value), token=++version;
+  if(!Number.isInteger(year)||year<2000||year>2100){message("행사 연도를 네 자리로 입력하세요.",true);return;}
+  const lf=$("leaders").files[0],pf=$("people").files[0],manual=manualMode();
+  busy=true;ready();message("이 기기에서 엑셀을 읽고 있습니다.");
+  try{
+    const leaderRows=manual?manualData():await readBook(lf);
+    const leaders=readLeaders(leaderRows,year), data=readPeople(await readBook(pf),year);
+    if(token!==version)return;
+    state={year,leaders,...data,groups:null};review();
+  }catch(e){if(token===version)message(e instanceof InputIssue?e.message:(e.message&&/[가-힣]/.test(e.message)?e.message:"파일을 읽을 수 없습니다. 첫 시트와 .xlsx 형식을 확인하세요."),true);}
+  finally{if(token===version){busy=false;ready();}}
+};
+$("back").onclick=()=>{state=null;clearResult();stage("setup");ready();message("");};
+function results(rows){
+  const {leaders,people}=state, byRow=new Map(people.map(p=>[p.row,p]));
+  state.groups=rows.map(group=>group.map(r=>byRow.get(r)).sort((a,b)=>a.name.localeCompare(b.name,"ko")));
+  const oldest=Math.min(...leaders.map(g=>g.year)),exceptions=people.filter(p=>p.year<oldest).length;
+  $("summary").textContent=people.length+"명 · "+leaders.length+"개 조 편성 완료. 필수 조건을 모두 확인했습니다."+(exceptions?" 최고령 조장 조 배정 "+exceptions+"명.":"");
+  const cams=[...new Set(people.map(p=>p.camp))].sort((a,b)=>+a-+b);
+  $("stats").replaceChildren(table(["새터 조","인원","남","여",...cams.map(c=>"신캠 "+c+"조")],state.groups.map((g,i)=>[leaders[i].id+"조",g.length,g.filter(p=>p.sex==="남").length,g.filter(p=>p.sex==="여").length,...cams.map(c=>g.filter(p=>p.camp===c).length)])));
+  $("scope").replaceChildren();
+  leaders.forEach((g,i)=>$("scope").append(new Option(g.id+"조 조장용",String(i))));
+  $("scope").append(new Option("운영진용 전체 명단 (주민등록번호 포함)","all"));
+  $("scope").onchange();stage("result");message("");
+}
+$("run").onclick=()=>{
+  if(!state||busy||!$("confirmed")?.checked)return;
+  if(state.people.some(p=>!p.name)){message("빈 이름을 입력한 뒤 편성하세요.",true);return;}
+  const keys=new Map(),token=name=>{const k=nameKey(name);if(!keys.has(k))keys.set(k,keys.size);return keys.get(k);};
+  const leaders=state.leaders.map(g=>({id:g.id,year:g.year,keys:g.names.map(token)}));
+  const people=state.people.map(({row,name,sex,year,camp,major})=>({row,key:token(name),sex,year,camp,major}));
+  const failed=s=>{stopWorker();for(const input of $("review").querySelectorAll("input"))input.disabled=false;$("run").disabled=!$("confirmed").checked;$("back").disabled=false;message(s,true);};
+  try{
+    workerURL=URL.createObjectURL(new Blob(["'use strict';\n"+solve.toString()+"\nonmessage=e=>{try{postMessage({rows:solve(e.data,n=>{if(n===1||n%10===0)postMessage({attempt:n})})});}catch(e){postMessage({error:e.message});}};"],{type:"text/javascript"}));
+    worker=new Worker(workerURL);busy=true;for(const input of $("review").querySelectorAll("input"))input.disabled=true;$("run").disabled=true;$("back").disabled=true;
+    worker.onmessage=e=>{if(e.data.rows){stopWorker();results(e.data.rows);}else if(e.data.error)failed(e.data.error);else message("필수 조건을 확인하며 편성 중입니다. 시도 "+e.data.attempt+"회");};
+    worker.onerror=()=>failed("브라우저에서 편성 작업을 실행할 수 없습니다.");worker.postMessage({leaders,people});
+  }catch{failed("브라우저에서 편성 작업을 시작할 수 없습니다.");}
+};
+$("again").onclick=()=>{state.groups=null;review();};
+$("scope").onchange=()=>{$("exportHint").textContent=$("scope").value==="all"?"전체 시트에 보험용 주민등록번호와 전화번호를 포함합니다. 조별 공유에는 조장용 파일을 사용하세요.":"선택한 조의 조장·조원과 연락처를 담습니다. 주민등록번호는 포함하지 않습니다.";};
+function groupSheet(i){
+  const l=state.leaders[i];
+  return {name:l.id+"조",widths:[12,18,23,12,21,20,20],rows:[["구분","이름","학과","성별","전화번호","담당 문행위원","위원 전화번호"],...l.names.map(n=>["조장",n]),...state.groups[i].map((p,j)=>[j+1,p.name,p.major,p.sex+"자",p.phone])]};
+}
+$("download").onclick=()=>{
+  if(!state?.groups)return;
+  const all=$("scope").value==="all",i=Number($("scope").value);
+  const sheets=all?[{name:"전체",widths:[10,16,24,22,10,12,20,23],rows:[["새터 조","이름","출신고교","학과","성별","신캠 조","전화번호","주민번호"],...state.groups.flatMap((g,i)=>g.map(p=>[state.leaders[i].id,p.name,p.school||"미기재",p.major,p.sex+"자",p.camp,p.phone,p.id]))]},...state.groups.map((_,i)=>groupSheet(i))]:[groupSheet(i)];
+  const url=URL.createObjectURL(makeWorkbook(sheets));urls.add(url);
+  const a=el("a");a.href=url;a.download=state.year+"새터_"+(all?"운영진전체":state.leaders[i].id+"조")+".xlsx";document.body.append(a);a.click();a.remove();
+  setTimeout(()=>{URL.revokeObjectURL(url);urls.delete(url);},2000);message("선택한 명단의 다운로드를 요청했습니다.");
+};
+reset();
+
+if(location.protocol==="file:"){
+  $("offlineLink").hidden=true;
+  $("cliLink").hidden=true;
+  document.querySelector(".offline p").textContent="내려받은 오프라인 화면을 사용 중입니다. 터미널판 압축 파일은 배포 페이지에서 받을 수 있습니다.";
+}
+</script></body></html>
