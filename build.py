@@ -17,7 +17,8 @@ policy = "; ".join(["default-src 'none'", "script-src " + digest(js), "style-src
                     "base-uri 'none'", "form-action 'none'"])
 out = root / "dist"
 out.mkdir(exist_ok=True)
-html = (src / "page.html").read_text().replace("__POLICY__", policy).replace("__STYLE__", css).replace("__SCRIPT__", js)
+art = "data:image/webp;base64," + base64.b64encode((src / "orientation.webp").read_bytes()).decode()
+html = (src / "page.html").read_text().replace("__POLICY__", policy).replace("__STYLE__", css).replace("__SCRIPT__", js).replace("__COVER_ART__", art)
 (out / "index.html").write_text(html)
 (out / "_headers").write_text("/*\n  Content-Security-Policy: " + policy + "; frame-ancestors 'none'\n  X-Frame-Options: DENY\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n  Cache-Control: no-store\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n")
 

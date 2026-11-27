@@ -37,7 +37,7 @@ function reset(){
   for(const url of urls)URL.revokeObjectURL(url);urls.clear();
   for(const pick of document.querySelectorAll(".pick"))pick.classList.remove("selected");
   $("people").value="";$("leaders").value="";
-  $("leaderLabel").textContent=$("peopleLabel").textContent="파일 찾기";
+  $("leaderLabel").textContent=$("peopleLabel").textContent="파일 선택";
   document.querySelector('input[value="file"]').checked=true;
   $("manualRows").replaceChildren();addLeader();
   $("year").value=new Date().getFullYear();clearResult();stage("setup");ready();message("");
@@ -47,7 +47,7 @@ window.addEventListener("pagehide",reset);
 for(const radio of document.querySelectorAll('input[name="mode"]'))radio.onchange=ready;
 $("add").onclick=addLeader;
 for(const [id,label] of [["leaders","leaderLabel"],["people","peopleLabel"]]){
-  $(id).onchange=()=>{$(id).parentElement.classList.toggle("selected",!!$(id).files.length);$(label).textContent=$(id).files[0]?.name||"파일 찾기";message("");ready();};
+  $(id).onchange=()=>{$(id).parentElement.classList.toggle("selected",!!$(id).files.length);$(label).textContent=$(id).files[0]?.name||"파일 선택";message("");ready();};
 }
 function table(headers,rows) {
   const t=el("table"),head=el("thead"),tr=el("tr");
@@ -126,6 +126,9 @@ $("download").onclick=()=>{
   setTimeout(()=>{URL.revokeObjectURL(url);urls.delete(url);},2000);message("선택한 명단의 다운로드를 요청했습니다.");
 };
 reset();
+
+$("openOffline").onclick = () => $("offline").showModal();
+$("closeOffline").onclick = () => $("offline").close();
 
 if(location.protocol==="file:"){
   $("offlineLink").hidden=true;
